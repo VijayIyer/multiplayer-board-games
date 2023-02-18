@@ -1,0 +1,11 @@
+.ongoingGamesList {
+	display:flex;
+	flex-direction:row;
+	gap:3em;
+}
+.ongoingGames {
+	align-items:center;
+	display:flex;
+	flex-direction:column;
+	gap:4em;
+}
