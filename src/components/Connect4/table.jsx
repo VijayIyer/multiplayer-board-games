@@ -1,116 +1,106 @@
 import React, { Component } from 'react';
-import { useContext } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import Container from 'react-bootstrap/Container';
 import './table.css'
 import { gameContext } from './gameContext';
-
-export class Cell extends Component{
-	constructor(props){
-		super(props);
-		this.state = {
-			fill : false,
-			fillColor:this.props.turn
-		}
-		this.fill = this.fill.bind(this);
-	}
-	fill(e){
-		if(this.props.allowed.some(x => x === this.props.cellNumber) && !this.state.fill){
-			this.setState({
-				fill: true,
-				fillColor: this.props.turn === 'red' ? 'red' : 'blue'
-			})
-		  this.props.setTurn();
-			this.props.allowed.push(this.props.cellNumber - 6);
-			this.props.addFilled(this.props.cellNumber);
+import 'bootstrap/dist/css/bootstrap.min.css';
+const Cell = (props) =>{
+	const { filled, allowed, winningCircles, turn, setTurn, setAllowed } = useContext(gameContext);
+	// const [fill, setFill] = useState(false);
+	// const [fillColor, setFillColor] = useState(turn)
+	
+	function fillCell(e)
+	{
+		if(allowed.some(x => x === props.cellNumber) && filled[props.cellNumber] == -1){
+			//setFill(true);
+			// setFillColor((fillColor) =>{
+			// 	return turn === 'red' ? 'red' : 'blue'
+			// });
+		  props.changeTurn();
+			setAllowed((allowed) => [...allowed, props.cellNumber - 6]); // replace 6 with numCols
+			props.addFilled(props.cellNumber);
 		}
 	}
-	render(){
-		// console.log(`this cell is in allowed? ${this.props.allowed.some(x => x == this.props.cellNumber)} is filled? ${this.state.fill} with color ${this.state.fillColor}`)
 		return (
-			<td className={`${this.props.allowed.some(x => x === this.props.cellNumber) ? (this.state.fill ? (this.state.fillColor === 'red'? 'red-fill' : 'blue-fill'): 'allowed') : ''} ${this.props.winningCircles.some(x => x === this.props.cellNumber) ? 'winning': ''}`} onClick={(e) => this.fill(e)} >
+			<td className={`${allowed.some(x => x === props.cellNumber) ? (filled.some((x, i) => i == props.cellNumber && x != -1) ? (filled[props.cellNumber] === 'red'? 'red-fill' : 'blue-fill'): 'allowed') : ''} ${winningCircles.some(x => x === props.cellNumber) ? 'winning': ''}`} onClick={(e) => fillCell(e)} >
 			</td>)
+			// <td className={filled.some((x, i) => i === props.cellNumber && x != -1) ? (filled[props.cellNumber] == 'red' ? 'red-fill' : 'blue-fill'): allowed.some((x, i) => x == props.cellNumber ? 'allowed': '')} onClick={fillCell}></td>
+			// )
 	}
-}
 
-export class Row extends Component{
-	constructor(props){
-		super(props);
-		this.renderCols = this.renderCols.bind(this);
-	}
-	renderCols(numCols){
-		// console.log(`allowed : ${this.props.allowed}`);
+const Row = (props) =>
+{
+	const { allowed } = useContext(gameContext);
+	function renderCols(numCols){
+		
 		let cols = [];
 		for(let i = 0; i < numCols; i++){
-			const cell = this.props.rowNumber * numCols + i;
+			const cell = props.rowNumber * numCols + i;
 			cols.push(
 				(
 					<Cell 
 					key={cell} 
-					turn={this.props.turn} 
-					setTurn={this.props.setTurn}
-					className={`${this.props.allowed.some(x => x === cell)  ? 'allowed' : ''}`}allowed={this.props.allowed}
-					 addFilled={this.props.addFilled}
-					 cellNumber={cell}
-					 onClick={(e)=>this.fill(e)}
-					 winningCircles={this.props.winningCircles}
+					changeTurn={props.changeTurn}
+					addFilled={props.addFilled}
+					cellNumber={cell}
 					 />));
 		}
 		return cols;
 	}
-	render(){
+	
 		return (
-			<tr key={this.props.rowNumber}>
-				{this.renderCols(this.props.numCols)}
+			<tr key={props.rowNumber}>
+				{renderCols(props.numCols)}
 			</tr>)
-	}
 }
 
 export const Table = (props) => {
-	let { filled, setFilled, allowed, setAllowed, winningCircles, setWinningCircles} = useContext(gameContext);
+
+	const { 
+		gameId, 
+		filled, 
+		setFilled, 
+		allowed,
+		setAllowed, 
+		winningCircles, 
+		setWinningCircles, 
+		turn, 
+		setTurn, 
+		gameOver, 
+		setGameOver,
+		socket
+	} = useContext(gameContext);
 	
-	// 	super(props);
-	// 	this.state={
-	// 		filled:Array(props.numRows * props.numCols).fill(-1),
-	// 		allowed:Array.from(Array.from({ length: props.numCols }, (value, index) => index), arr => arr + (this.props.numRows - 1)*this.props.numCols),
-	// 		turn:'red',
-	// 		gameOver:false,
-	// 		winningCircles:[]
-	// 	}
-	// 	this.setTurn = this.setTurn.bind(this);
-	// 	this.addFilled = this.addFilled.bind(this);
-	// 	this.isGameOver = this.isGameOver.bind(this);
-	// }
+	useEffect(()=>{
+		console.log('checking game over')
+			setGameOver(isGameOver())
+		}, [JSON.stringify(filled)]);
+	
+
 	function addFilled(cellNumber){
-		let current = this.state.turn;
-		let filled = this.state.filled;
-		filled[cellNumber] = current;
-		this.setState({
-			filled: filled
-		}, ()=>{
-			this.setState({
-				gameOver:this.isGameOver()
-			})
+		// let filledCells = filled;
+		// filledCells[cellNumber] =  turn;
+		console.log(`playing move on ${cellNumber}, game ${gameId}`)
+		socket.emit('connect4Move', {
+			'gameId':gameId,
+			'cellNumber':cellNumber
 		});
 	}
 	function isGameOver(){
-		return this.checkVerticalCells()
-		|| this.checkHorizontalCells() 
-		|| this.checkLeftRightDiagonals()
-		|| this.checkRightLeftDiagonals();
+		return checkVerticalCells()
+		|| checkHorizontalCells() 
+		|| checkLeftRightDiagonals()
+		|| checkRightLeftDiagonals();
 	}
-	// these 4 methods need to be more clean and easier to understand
 	function checkHorizontalCells(){
-		let compareArrayLocations = {
-		index:[]
-	}
-		let rows = this.props.numRows;
-		let cols = this.props.numCols;
+		let rows = props.numRows;
+		let cols = props.numCols;
 		for(let i = 0; i < rows; i++){
 			for(let j = 0; j <= cols - 4; j ++){
 				let compareArrayLocations = {
-		index:[]
-	}
-				let compareArray =this.state.filled.filter(function (x, index, arr) {
+				index:[]
+				}
+				let compareArray =  filled.filter(function (x, index, arr) {
 					if(index == i*cols+j || 
 						index == i*cols+ (j + 1) || 
 						index == i*cols+ (j + 2) || 
@@ -125,11 +115,9 @@ export const Table = (props) => {
 						return true;
 					}
 			}, compareArrayLocations)
-				console.log(`compareArrayLocations: ${compareArrayLocations.index}`)
+
 				if (compareArray.length == 4 && compareArray.every((x, index, arr) => ((x === 'red' || x === 'blue') && x === arr[0]))) {
-					this.setState({
-						winningCircles: compareArrayLocations.index
-					});
+					setWinningCircles(compareArrayLocations.index);
 					return true
 				};
 			}
@@ -138,14 +126,14 @@ export const Table = (props) => {
 	}
 	function checkLeftRightDiagonals(){
 	
-	let rows = this.props.numRows;
-		let cols = this.props.numCols;
+	let rows = props.numRows;
+		let cols = props.numCols;
 		for(let i = 0; i <= rows - 4; i++){
 			for(let j = cols - 1; j >= cols - 4; j--){
 				let compareArrayLocations = {
-		index:[]
-	}
-				let compareArray =this.state.filled.filter(function (x, index, arr) {
+				index:[]
+				}
+				let compareArray = filled.filter(function (x, index, arr) {
 					if(index == i*cols+j || 
 						index == (i+1)*cols+ (j-1) || 
 						index == (i+2)*cols+ (j-2) || 
@@ -162,11 +150,8 @@ export const Table = (props) => {
 					}
 			}, compareArrayLocations)
 
-				console.log(`compareArrayLocations: ${compareArrayLocations.index}`)
 				if (compareArray.length == 4 && compareArray.every((x, index, arr) => ((x == 'red' || x == 'blue') && x == arr[0]))) {
-					this.setState({
-						winningCircles: compareArrayLocations.index
-					})
+					setWinningCircles(compareArrayLocations.index);
 					return true
 				};
 			}
@@ -175,14 +160,14 @@ export const Table = (props) => {
 	}
 	function checkRightLeftDiagonals(){
 		
-		let rows = this.props.numRows;
-		let cols = this.props.numCols;
+		let rows = props.numRows;
+		let cols = props.numCols;
 		for(let i = 0; i <= rows - 4; i++){
 			for(let j = 0; j <= cols - 4; j ++){
 				let compareArrayLocations = {
 					index:[]
 					}
-				let compareArray =this.state.filled.filter(function (x, index, arr) {
+				let compareArray = filled.filter(function (x, index, arr) {
 				if (index == i*cols+j || 
 					  index == (i+1)*cols+ (j+1) || 
 					  index == (i+2)*cols+ (j+2) || 
@@ -197,11 +182,8 @@ export const Table = (props) => {
 					return true;
 				}
 		}, compareArrayLocations)
-				console.log(`compareArrayLocations: ${compareArrayLocations.index}`)
 				if (compareArray.length == 4 && compareArray.every((x, index, arr) => ((x === 'red' || x === 'blue') && x === arr[0]))) {
-					this.setState({
-						winningCircles: compareArrayLocations.index
-					})
+					setWinningCircles(compareArrayLocations.index);
 					return true
 				};
 			}
@@ -209,17 +191,14 @@ export const Table = (props) => {
 		return false;
 	}
 	function checkVerticalCells(){
-		console.log(`checking vertical cells`);
-		
-		console.log('checking vertical 4 in a row');
-		let rows = this.props.numRows;
-		let cols = this.props.numCols;
+		let rows = props.numRows;
+		let cols = props.numCols;
 		for(let i = 0; i <= rows - 4; i++){
 			for(let j = 0; j < cols; j ++){
 				let compareArrayLocations = {
-		index:[]
-	}
-				let compareArray =this.state.filled.filter(function (x, index, arr) {
+					index:[]
+				}
+				let compareArray = filled.filter(function (x, index, arr) {
 					if((index == i*cols+j || 
 					index == (i+1)*cols+j || 
 					index == (i+2)*cols+j || 
@@ -232,24 +211,20 @@ export const Table = (props) => {
 					{
 						this.index.push(index);
 						return true;
-				}
-		}, compareArrayLocations);
-				console.log(`compareArray : ${compareArray}`)
+						}
+				}, compareArrayLocations);
 				if(compareArray.length == 4 && compareArray.every((x, index, arr) => ((x === 'red' || x === 'blue') && (x === arr[0])))) {
-					console.log(`compareArray length ${compareArray.length}`);
-					this.setState({
-						winningCircles: compareArrayLocations.index
-					})
+					setWinningCircles(compareArrayLocations.index);
 					return true
 				};
 			}
 		}
 		return false;
 	}
-	function setTurn(){
-		let current = this.state.turn;
-		this.setState({
-			turn: current == 'red' ? 'blue' : 'red'
+	function changeTurn(){
+		let current = turn;
+		setTurn((current) =>{
+			return current == 'red' ? 'blue' : 'red'
 		});
 	}
 	function renderRows(numRows){
@@ -258,13 +233,11 @@ export const Table = (props) => {
 			rows.push(
 				<Row 
 				key={i}
-				turn={this.state.turn} 
-				setTurn={this.setTurn} 
-				allowed={this.state.allowed} 
+				changeTurn={changeTurn} 
 				rowNumber={i} 
-				numCols={this.props.numCols} 
-				addFilled={this.addFilled}
-				winningCircles={this.state.winningCircles}
+				numCols={props.numCols} 
+				addFilled={addFilled}
+				winningCircles={winningCircles}
 				/>)
 		}
 		return rows;
@@ -272,11 +245,18 @@ export const Table = (props) => {
 	
 	return(
 			<Container>
-			  { this.state.gameOver && <h1>{`${(this.state.turn == 'red'? 'blue' : 'red').toUpperCase()} won. Game Over!`}</h1>}
-				<div className={`background && ${this.state.gameOver && 'disabledDiv'}`}>
+			  { gameOver && <h1>{`${turn.toUpperCase()} won. Game Over!`}</h1>}
+				{filled === undefined && <div>filled is undefined</div>}
+				{allowed === undefined && <div>allowed is undefined</div>}
+				{setAllowed === undefined && <div>setAllowed is undefined</div>}
+				{winningCircles === undefined && <div>winningCircles is undefined</div>}
+				{setWinningCircles  === undefined && <div>setWinningCircles is undefined</div>}
+				{gameOver === undefined && <div className='warning'>gameOver is undefined</div>}
+				{setTurn === undefined && <div>setTurn is undefined</div>}
+				<div className={`background && ${gameOver && 'disabledDiv'}`}>
 					<table>
 						<tbody>
-							{this.renderRows(this.props.numRows)}
+							{renderRows(props.numRows)}
 						</tbody>
 					</table>
 				</div>

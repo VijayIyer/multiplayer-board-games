@@ -6,7 +6,8 @@ import { OngoingGames } from './components/OngoingGames';
 import { Home } from './components/Home';
 import { PageNotFound } from './components/PageNotFound';
 import { TicTacToe } from './components/TicTacToe';
-import  { Connect4Game } from './components/Connect4/gameContext';
+import  { GameContextProvider } from './components/Connect4/gameContextProvider';
+import { Connect4 } from './components/Connect4/index.jsx';
 import './App.css';
 import { appContext } from './AppContext';
 import io from 'socket.io-client';
@@ -64,14 +65,18 @@ function App() {
                <appContext.Provider value={
                   socket
                 }> 
-                <Connect4Game />
+                  <GameContextProvider>
+                    <Connect4 numRows={8} numCols={6} />
+                  </GameContextProvider>
                 </appContext.Provider>
               } />
               <Route path="/game/connect4" element={
                <appContext.Provider value={
                   socket
                 }> 
-                <Connect4Game />
+                  <GameContextProvider>
+                    <Connect4 numRows={8} numCols={6} />
+                  </GameContextProvider>
                 </appContext.Provider>
               } />
             </Routes>
