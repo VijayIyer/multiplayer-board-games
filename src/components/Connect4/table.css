@@ -1,0 +1,46 @@
+table {
+  border-spacing: 1em;
+  margin: 1rem auto;
+  border-collapse: separate;
+}
+.allowed{
+  background-color: white;
+}
+td {
+  padding: 1rem 1.2rem;
+  border-radius: 50%;
+  border: 1px solid black;
+  cursor: pointer;
+  background-color: grey;
+}
+.winning{
+  border-color: white;
+  border: 5px solid;
+}
+.background{
+  background-color:yellow;
+}
+/*#border-separate:checked ~ table {
+  border-collapse: separate;
+}
+
+#border-collapse:checked ~ table {
+  border-collapse: collapse;
+}*/
+.red-fill{
+  background-color: red;
+}
+.blue-fill{
+  background-color: blue;
+}
+.disabledDiv{
+  pointer-events: none;
+  opacity: 0.6;
+}
+body {
+  align-self:center;
+  
+}
+input {
+  margin-right: 20px;
+}

@@ -5,6 +5,7 @@ import { useContext, useEffect, useState } from 'react';
 import {useParams} from 'react-router-dom';
 import { appContext } from './../../AppContext';
 import './../../App.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
 // convert to using class component later
 
 export function TicTacToe () {
@@ -34,7 +35,7 @@ export function TicTacToe () {
         setTurn(data.turn);
       });
     socket.on('gameOver', (data)=>{
-        console.log(`Game Over!`);
+        setGameOver(true);
         setHighlightedSquares(data.winningSquares)
       });
 
@@ -44,6 +45,7 @@ export function TicTacToe () {
   const [highlightedSquares, setHighlightedSquares] = useState([]);
   const [turn, setTurn] = useState(0);
   const [gameId, setGameId] = useState(-1);
+  const [gameOver, setGameOver] = useState(false);
 
 		const handleMove = (pos) => {
   		console.log(`squares that was clicked: ${pos}`);
@@ -66,12 +68,15 @@ export function TicTacToe () {
   	// }
 		return(
 			<Container>
-				<h1>Tic Tac Toe!!</h1>
-				<Game gameId={gameId} squares={squares}
-				handleMove={(pos)=>handleMove(pos)} 
-      	highlightedSquares={highlightedSquares}
-      	turn={turn}
-				/>
+				
+          <h1>Tic Tac Toe!!</h1>
+  				{gameOver && <h1>Game Over!!!</h1>}
+          <Game className="justify-content-center" gameOver={gameOver} gameId={gameId} squares={squares}
+  				handleMove={(pos)=>handleMove(pos)} 
+        	highlightedSquares={highlightedSquares}
+        	turn={turn}
+  				/>
+        
 			</Container>
 			)
 }
@@ -99,6 +104,7 @@ class Game extends React.Component {
 	<div className="game">
 	<div className="game-board">
 	  <Board
+      gameOver={this.props.gameOver}
 	    squares={this.props.squares ? this.props.squares: Array(9).fill(null)}
 	    onClick={(i) => this.handleClick(i)}
       highlightedSquares={this.props.highlightedSquares}
@@ -119,6 +125,7 @@ class Board extends React.Component {
   renderSquare(i) {
     return (
       <Square
+        gameOver={this.props.gameOver}
         value={this.props.squares[i]}
         onClick={() => this.props.onClick(i)}
         highlighted={ this.props.highlightedSquares.some(x => x === i)}
@@ -155,7 +162,7 @@ class Board extends React.Component {
 
 function Square(props) {
   return (
-    <button className={`square ${props.highlighted ? 'highlight' : ''}`} onClick={props.onClick}>
+    <button disabled={props.gameOver} className={`square ${props.highlighted ? 'highlight' : ''}`} onClick={props.onClick}>
       {props.value === -1 ? null : props.value}
     </button>
   );

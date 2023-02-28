@@ -11,6 +11,7 @@ export function OngoingGames() {
 	let id = null;
 	useEffect(()=>{
 		socket.on('newGameCreated', (data) =>{
+				console.log(JSON.stringify(data));
 				setOngoingGames((data) => {
         return ongoingGames.concat(data); // append and return new array reference
       });
@@ -37,11 +38,20 @@ export function OngoingGames() {
 				{	ongoingGames.map((game, index) =>{
 						return (
 							<div className="ongoingGamesList">
-							<div>{`Game Id:${game.gameId}`}</div>
+							<div>{`Game Id : ${game.gameId}`}</div>
 							<div>{`${game.type}`}</div>
+							{game.type === 'Tic Tac Toe'
+							&& 
 							<Link to={`/game/tictactoe/${game.gameId}`}>
 								<Button variant='outline-dark'>></Button>
 							</Link>
+							}
+							{game.type === 'Connect4'
+							&& 
+							<Link to={`/game/connect4/${game.gameId}`}>
+								<Button variant='outline-dark'>></Button>
+							</Link>
+							}
 							</div>
 							)
 					})

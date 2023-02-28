@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 export class Home extends Component {
 	render(){
 		return(
-			<Container>
+			<Container className="d-flex gap-5 flex-column">
 				
 				<div>
 					<Link to='/newGame'>
