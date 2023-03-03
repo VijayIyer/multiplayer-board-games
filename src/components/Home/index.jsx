@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 export class Home extends Component {
 	render(){
 		return(
-			<Container className="d-flex gap-5 flex-column">
+			<Container className="d-flex mt-5 gap-3 flex-column">
 				
 				<div>
 					<Link to='/newGame'>
@@ -14,7 +14,7 @@ export class Home extends Component {
 				</div>
 				<div>
 					<Link to='/join'>
-							<Button variant='outline-dark'>Join Ongoing Games</Button>
+							<Button variant='outline-dark'>Join an ongoing game</Button>
 					</Link>
 				</div>
 				

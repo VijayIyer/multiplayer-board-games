@@ -71,10 +71,10 @@ export const Table = (props) => {
 		socket
 	} = useContext(gameContext);
 	
-	useEffect(()=>{
-		console.log('checking game over')
-			setGameOver(isGameOver())
-		}, [JSON.stringify(filled)]);
+	// useEffect(()=>{
+	// 	console.log('checking game over')
+	// 		setGameOver(isGameOver())
+	// 	}, [JSON.stringify(filled)]);
 	
 
 	function addFilled(cellNumber){

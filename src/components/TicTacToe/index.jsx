@@ -1,83 +1,115 @@
 import React, { Component } from 'react';
-import Button from 'react-bootstrap/Button';
-import Container from 'react-bootstrap/Container';
+import { Container, Button } from 'react-bootstrap';
 import { useContext, useEffect, useState } from 'react';
 import {useParams} from 'react-router-dom';
 import { appContext } from './../../AppContext';
-import './../../App.css';
-import 'bootstrap/dist/css/bootstrap.min.css';
+import './index.css'
+import 'bootstrap/dist/css/bootstrap.css';
 // convert to using class component later
+
+export function GameOverComponent(props){
+  return (
+    <>
+    <h3>{`Game Over!!! ${props.turn === 0? '\'X\'' : '\'O\''} won the game !!`}</h3>
+    </>
+    )
+}
 
 export function TicTacToe () {
 		const socket = useContext(appContext);
-    let { id } = useParams()
-		useEffect(()=>{
-			console.log(`is id undefined ${!id}`)
-			if(!id){
-        socket.emit('createTicTacToeGame', {'name':'vijay'});
-      }
-			else{
-        socket.emit('getExistingTicTacToeGame', {'id' : id});
-      }
-      socket.on('newGameDetails', (data)=>{
-				console.log(`here's the data to create a tic tac toe game ${JSON.stringify(data)}`);
-				setSquares(data.squares);
-				setGameId(data.id);
-			});
-    socket.on('ongoingGameDetails', (data)=>{
-        console.log(`here's the ongoing game data ${JSON.stringify(data)}`);
-        setSquares(data.squares);
-        setGameId(data.id);
-      });
-    socket.on('opponentMadeMove', (data)=>{
-        console.log(`here's the ongoing game data ${JSON.stringify(data)}`);
-        setSquares(data.squares);
-        setTurn(data.turn);
-      });
-    socket.on('gameOver', (data)=>{
-        setGameOver(true);
-        setHighlightedSquares(data.winningSquares)
-      });
-
-		}, [])
-	const [squares, setSquares] = useState(null)
+    const [squares, setSquares] = useState(null)
   const [winner, setWinner] = useState(null);
   const [highlightedSquares, setHighlightedSquares] = useState([]);
   const [turn, setTurn] = useState(0);
   const [gameId, setGameId] = useState(-1);
   const [gameOver, setGameOver] = useState(false);
-
-		const handleMove = (pos) => {
-  		console.log(`squares that was clicked: ${pos}`);
+    let { id } = useParams()
+		useEffect(()=>{
+			console.log(`is id undefined ${!id}`)
+			// create new game and obtain id
+      if(!id){
+        socket.emit('createTicTacToeGame', {'name':'vijay'});
+      }
+      // join an existing game with a specific id
+			else{
+        socket.emit('getExistingTicTacToeGame', {'id' : id});
+      }
+    }, []);
+      // get details about newly created game
+    useEffect(()=>{
+      console.log(`newGame details outside stuff should only be called once`)
+      socket.on('newGameDetails', (data)=>{
+				console.log(`here's the data to create a tic tac toe game ${JSON.stringify(data)}`);
+				setSquares(data.squares);
+				setGameId(data.id);
+        setTurn(data.turn);
+        if(winner) {
+          setHighlightedSquares(data.winner)
+        }
+        setWinner(data.winner)
+			});
+    }, [gameId]);
+      // get details about a game you just joined
+    useEffect(()=>{
+      socket.on('ongoingGameDetails', (data)=>{
+        console.log(`here's the ongoing game data ${JSON.stringify(data)}`);
+        setSquares(data.squares);
+        setTurn(data.turn);
+        setGameId(data.id);
+        if(winner) {
+          setHighlightedSquares(data.winner)
+        }
+        setWinner(data.winner)
+      });
+    }, [gameId])
+      // recieve update when opponent makes a move
+    useEffect(()=>{
+      socket.on('opponentMadeMove', (data)=>{
+        console.log(`opponent made move - id:${data.id} gameId:${gameId}`);
+        if(data.id == gameId){
+          console.log(`opponent made move - ${JSON.stringify(data)}`);
+          setSquares(data.squares);
+          setTurn(data.turn);  
+        }
+        
+      });
+    }, [gameId]);
+      // notification recieved when either win or lose or draw
+    useEffect(()=>{
+      socket.on('gameOver', (data)=>{
+        console.log(`gameOver event sent by server!! dataid: ${data.id}, gameId:${gameId}`);
+        if(data.id == gameId){
+          setGameOver(true);
+          setHighlightedSquares(data.winningSquares)
+          setWinner(data.winningSquares)
+          setTurn(data.turn);  
+        }
+      });
+    }, [gameId])
+	
+  const handleMove = (pos) => {
+  		console.log(`gameId - ${gameId}, squares that was clicked: ${pos}`);
   		socket.emit('move', {'pos':pos, 'gameId':gameId}, (data)=>{
-        console.log(`${JSON.stringify(data)}`)
+        console.log(`gameId at this point ${gameId}`)
         setSquares(data.squares);
         setTurn(data.turn);
       });
       
   	}
-  	// const restart = () =>{
-    // 	socket.emit('restart', ()=>{});  
-  	// }
-  	const sendChatMessage  = () =>{
-    	socket.emit('chat', {'msg':document.querySelector('#chatBox').value});
-  	}
-  	// const join = () =>{
-    // 	console.log('joining')
-    // 	socket.emit('join', ()=>{})
-  	// }
-		return(
-			<Container>
+  return(
+			<div className="text-center">
 				
           <h1>Tic Tac Toe!!</h1>
-  				{gameOver && <h1>Game Over!!!</h1>}
-          <Game className="justify-content-center" gameOver={gameOver} gameId={gameId} squares={squares}
-  				handleMove={(pos)=>handleMove(pos)} 
-        	highlightedSquares={highlightedSquares}
-        	turn={turn}
-  				/>
+  				{gameOver && <GameOverComponent turn={turn} />}
+          <div>
+            <Game gameOver={gameOver} gameId={gameId} squares={squares}
+    				handleMove={(pos)=>handleMove(pos)} 
+          	highlightedSquares={highlightedSquares}
+          	turn={turn}
+    				/>
+          </div>
         
-			</Container>
+			</div>
 			)
 }
 
@@ -99,10 +131,10 @@ class Game extends React.Component {
 
     return (
     <>
-    <h1>{`Game No.: ${this.props.gameId == -1 ? '' : this.props.gameId}`}</h1>
+    <h1>{`Game #${this.props.gameId == -1 ? '' : this.props.gameId}`}</h1>
 	
 	<div className="game">
-	<div className="game-board">
+	<div className="game-board align-items-center">
 	  <Board
       gameOver={this.props.gameOver}
 	    squares={this.props.squares ? this.props.squares: Array(9).fill(null)}
@@ -125,6 +157,7 @@ class Board extends React.Component {
   renderSquare(i) {
     return (
       <Square
+        key={i}
         gameOver={this.props.gameOver}
         value={this.props.squares[i]}
         onClick={() => this.props.onClick(i)}
@@ -153,7 +186,7 @@ class Board extends React.Component {
   }
   render() {
     return (
-      <div>
+      <div className="center">
         {this.renderBoard(9, 3)}
       </div>
     );

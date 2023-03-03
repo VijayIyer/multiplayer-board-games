@@ -9,7 +9,7 @@ export class ChooseGame extends Component{
 	render(){
 		return (
 			<div>
-			<h1>Choose Game:</h1>
+			<h1>Choose New Game:</h1>
 				<ul>
 					<li>
 						<Link to='/game/tictactoe'>
