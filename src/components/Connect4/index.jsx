@@ -22,7 +22,7 @@ export const Connect4 = (props) => {
         <li><div>Blue - Player 2 filled</div></li>
         <li><div>Marked Solid Border - 4 Consecutive locations with same color</div></li>
       </ul>
-      <Table numRows={props.numRows} numCols={props.numCols} />
+      <Table />
     </div>
     )
 }

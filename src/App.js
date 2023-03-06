@@ -1,6 +1,7 @@
 import Container from 'react-bootstrap/Container';
 import Button from 'react-bootstrap/Button';
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Navbar } from 'react-bootstrap';
+import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import { ChooseGame } from './components/ChooseGame';
 import { OngoingGames } from './components/OngoingGames';
 import { Home } from './components/Home';
@@ -21,15 +22,12 @@ function App() {
       console.log('connected!');
     
     })
-    socket.on('newGameCreated', (data)=>{
-      console.log('new game has been created');
-    });
 
   }, [])
   return (
     <div className="App">
       <Container fluid>
-        
+
           <BrowserRouter>
             <Routes>
               <Route path='/' element={
@@ -44,7 +42,7 @@ function App() {
                   socket
                 }>
                   <OngoingGames />
-                </appContext.Provider>}/>
+                </appContext.Provider>} />
               <Route path='/newGame' element={<ChooseGame />}/>
               <Route path="*" element={<PageNotFound />} />
               <Route path="/game/tictactoe/:id" element={
@@ -80,6 +78,13 @@ function App() {
                 </appContext.Provider>
               } />
             </Routes>
+            <Navbar fixed="top" variant="primary">
+              <Link to="/">
+                <Navbar.Brand>
+                    Home
+                </Navbar.Brand>
+              </Link>
+            </Navbar>
           </BrowserRouter>
         
       </Container>

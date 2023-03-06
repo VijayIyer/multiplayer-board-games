@@ -5,6 +5,7 @@ import {useParams} from 'react-router-dom';
 import { appContext } from './../../AppContext';
 import './index.css'
 import 'bootstrap/dist/css/bootstrap.css';
+import { ServerNotRunningComponent }  from '../../components/serverNotRunningComponent';
 // convert to using class component later
 
 export function GameOverComponent(props){
@@ -96,6 +97,10 @@ export function TicTacToe () {
       });
       
   	}
+  
+  if(gameId == -1){
+    return <ServerNotRunningComponent />
+  }
   return(
 			<div className="text-center">
 				

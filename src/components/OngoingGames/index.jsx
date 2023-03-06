@@ -9,15 +9,21 @@ export function OngoingGames() {
 	const socket  = useContext(appContext);
 	const [ongoingGames, setOngoingGames] = useState([]);
 	let id = null;
-	useEffect(()=>{
+	function updateOngoingGames(){
 		socket.on('newGameCreated', (data) =>{
 				console.log(JSON.stringify(data));
-				setOngoingGames((data) => {
-        return ongoingGames.concat(data); // append and return new array reference
-      });
+				setOngoingGames((ongoingGames) =>{
+					return ongoingGames.concat(data)
+					}); // append and return new array reference
+			})
+		}
+
+	useEffect(()=>{
+				updateOngoingGames();
 				console.log(`${JSON.stringify(ongoingGames)}`);
-			});
-		}, []);
+			}, []);
+
+
 
 	useEffect(()=>{
 		socket.emit('getAllOngoingGames', (data)=>{

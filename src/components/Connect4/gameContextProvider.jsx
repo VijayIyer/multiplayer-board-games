@@ -30,38 +30,58 @@ export const GameContextProvider = (props) => {
 
 	useEffect(()=>{
 			socket.on('newConnect4GameDetails', (data)=>{
-					console.log(`new connect4 game details - ${JSON.stringify(data)}`);
-							setGameId(data.id);
+						console.log(`new connect4 game details - ${JSON.stringify(data)}`);
+						setGameId(data.id);
 						setTurn(data.turn == 1 ? 'blue':'red')
 						setFilled(data.filled);
 						setAllowed(data.allowed);
 			});	
-		})
+		}, []);
 	useEffect(()=>{
-				socket.on('ongoingConnect4GameDetails', (data) =>{
+			socket.on('ongoingConnect4GameDetails', (data) =>{
+				console.log(`existing connect4 game details - ${JSON.stringify(data)}, ${gameId}`);
+				
 					console.log(`existing connect4 game details - ${JSON.stringify(data)}`);
 					setGameId(data.id);
-				setTurn(data.turn == 1 ? 'blue':'red')
-				setFilled(data.filled);
-				setAllowed(data.allowed);
+					setTurn(data.turn == 1 ? 'blue':'red')
+					setFilled(data.filled);
+					setAllowed(data.allowed);
+					setWinningCircles(data.winningCircles);
+				
 			})
 
-	});
+	}, [gameId]);
 
 	useEffect(()=>{
 				socket.on('connect4MoveSuccess', (data) =>{
 					console.log(`a move was played - ${JSON.stringify(data)}`);
-					//setGameId(data.gameId);
-				setTurn(data.turn == 1 ? 'blue':'red')
-				setMoves((moves) => filled.filter((x, i)=> x != -1))
-				setFilled(data.filled);
-				setAllowed(data.allowed);
+					if(data.id == gameId){
+						console.log(`a move was played - ${JSON.stringify(data)}`);
+						setTurn(data.turn == 1 ? 'blue':'red')
+						setMoves((moves) => filled.filter((x, i)=> x != -1))
+						setFilled(data.filled);
+						setAllowed(data.allowed);	
+					}
 			})
 
-	}, [filled]);
+	}, [gameId]);
+
+	useEffect(()=>{
+		socket.on('connect4gameover', (data)=>{
+			if(data.id == gameId){
+				setTurn(data.turn == 1 ? 'blue':'red')
+				setFilled(data.filled);
+				setAllowed(data.allowed);
+				setGameOver(true);
+				console.log(`winning circles are  - ${JSON.stringify(data.winningCircles)}`);
+				setWinningCircles(data.winningCircles)
+			}
+		
+		})
+	}, [gameId])
 	useEffect(()=>{
 		socket.on('moveNotAllowed', ()=>{
-			alert('move not allowed')
+			console.warn('move not allowed')
 		})
 	}, [])
 	
@@ -79,15 +99,17 @@ export const GameContextProvider = (props) => {
 		gameOver,
 		setGameOver,
 		winningCircles,
-		setWinningCircles
+		setWinningCircles,
+		numRows,
+		numCols
 		}}
 	>
 		{ gameId === null ? 
-		<><h1>{`No game to render ${gameId}`}</h1></>	
+		<><h1>{`No game to render`}</h1></>	
 		:
 		(
 				<>
-					<h1>Game ID : {gameId}</h1>
+					<h1>Game ID : #{gameId}</h1>
 					<div>{`Moves : ${moves}`}</div>
 					{props.children}
 				</>

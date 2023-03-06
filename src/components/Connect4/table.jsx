@@ -5,7 +5,7 @@ import './table.css'
 import { gameContext } from './gameContext';
 import 'bootstrap/dist/css/bootstrap.min.css';
 const Cell = (props) =>{
-	const { filled, allowed, winningCircles, turn, setTurn, setAllowed } = useContext(gameContext);
+	const { filled, allowed, winningCircles, turn, setTurn, setAllowed, numCols } = useContext(gameContext);
 	// const [fill, setFill] = useState(false);
 	// const [fillColor, setFillColor] = useState(turn)
 	
@@ -17,12 +17,13 @@ const Cell = (props) =>{
 			// 	return turn === 'red' ? 'red' : 'blue'
 			// });
 		  props.changeTurn();
-			setAllowed((allowed) => [...allowed, props.cellNumber - 6]); // replace 6 with numCols
+			setAllowed((allowed) => [...allowed, props.cellNumber - numCols]); // replace 6 with numCols
 			props.addFilled(props.cellNumber);
 		}
 	}
 		return (
-			<td className={`${allowed.some(x => x === props.cellNumber) ? (filled.some((x, i) => i == props.cellNumber && x != -1) ? (filled[props.cellNumber] === 'red'? 'red-fill' : 'blue-fill'): 'allowed') : ''} ${winningCircles.some(x => x === props.cellNumber) ? 'winning': ''}`} onClick={(e) => fillCell(e)} >
+			<td className={`${winningCircles.some(x => x === props.cellNumber) ? 'winning': ''} ${allowed.some(x => x === props.cellNumber) ? (filled.some((x, i) => i == props.cellNumber && x != -1) ? (filled[props.cellNumber] === 'red'? 'red-fill' : 'blue-fill'): 'allowed') : ''}`} onClick={(e) => fillCell(e)} >
+				
 			</td>)
 			// <td className={filled.some((x, i) => i === props.cellNumber && x != -1) ? (filled[props.cellNumber] == 'red' ? 'red-fill' : 'blue-fill'): allowed.some((x, i) => x == props.cellNumber ? 'allowed': '')} onClick={fillCell}></td>
 			// )
@@ -30,12 +31,13 @@ const Cell = (props) =>{
 
 const Row = (props) =>
 {
-	const { allowed } = useContext(gameContext);
+	const { allowed, numCols } = useContext(gameContext);
 	function renderCols(numCols){
 		
 		let cols = [];
 		for(let i = 0; i < numCols; i++){
 			const cell = props.rowNumber * numCols + i;
+			console.log(`cell number in Row is  - ${cell}`)
 			cols.push(
 				(
 					<Cell 
@@ -50,7 +52,7 @@ const Row = (props) =>
 	
 		return (
 			<tr key={props.rowNumber}>
-				{renderCols(props.numCols)}
+				{renderCols(numCols)}
 			</tr>)
 }
 
@@ -68,7 +70,9 @@ export const Table = (props) => {
 		setTurn, 
 		gameOver, 
 		setGameOver,
-		socket
+		socket,
+		numRows,
+		numCols
 	} = useContext(gameContext);
 	
 	// useEffect(()=>{
@@ -81,146 +85,148 @@ export const Table = (props) => {
 		// let filledCells = filled;
 		// filledCells[cellNumber] =  turn;
 		console.log(`playing move on ${cellNumber}, game ${gameId}`)
-		socket.emit('connect4Move', {
+		if(!gameOver){
+			socket.emit('connect4Move', {
 			'gameId':gameId,
 			'cellNumber':cellNumber
-		});
-	}
-	function isGameOver(){
-		return checkVerticalCells()
-		|| checkHorizontalCells() 
-		|| checkLeftRightDiagonals()
-		|| checkRightLeftDiagonals();
-	}
-	function checkHorizontalCells(){
-		let rows = props.numRows;
-		let cols = props.numCols;
-		for(let i = 0; i < rows; i++){
-			for(let j = 0; j <= cols - 4; j ++){
-				let compareArrayLocations = {
-				index:[]
-				}
-				let compareArray =  filled.filter(function (x, index, arr) {
-					if(index == i*cols+j || 
-						index == i*cols+ (j + 1) || 
-						index == i*cols+ (j + 2) || 
-						index == i*cols+ (j + 3)
-					&& (x === 'red'  || x === 'blue') 
-					&& ((arr[i*cols+j] === x) 
-					&& (arr[i*cols+(j+1)]=== x)
-					&& (arr[i*cols+(j+2)]=== x)
-					&& (arr[i*cols+(j+3)]=== x)))
-					{
-						this.index.push(index);
-						return true;
-					}
-			}, compareArrayLocations)
-
-				if (compareArray.length == 4 && compareArray.every((x, index, arr) => ((x === 'red' || x === 'blue') && x === arr[0]))) {
-					setWinningCircles(compareArrayLocations.index);
-					return true
-				};
-			}
+			});
 		}
-		return false;
 	}
-	function checkLeftRightDiagonals(){
+	// function isGameOver(){
+	// 	return checkVerticalCells()
+	// 	|| checkHorizontalCells() 
+	// 	|| checkLeftRightDiagonals()
+	// 	|| checkRightLeftDiagonals();
+	// }
+	// function checkHorizontalCells(){
+	// 	let rows = numRows;
+	// 	let cols = numCols;
+	// 	for(let i = 0; i < rows; i++){
+	// 		for(let j = 0; j <= cols - 4; j ++){
+	// 			let compareArrayLocations = {
+	// 			index:[]
+	// 			}
+	// 			let compareArray =  filled.filter(function (x, index, arr) {
+	// 				if(index == i*cols+j || 
+	// 					index == i*cols+ (j + 1) || 
+	// 					index == i*cols+ (j + 2) || 
+	// 					index == i*cols+ (j + 3)
+	// 				&& (x === 'red'  || x === 'blue') 
+	// 				&& ((arr[i*cols+j] === x) 
+	// 				&& (arr[i*cols+(j+1)]=== x)
+	// 				&& (arr[i*cols+(j+2)]=== x)
+	// 				&& (arr[i*cols+(j+3)]=== x)))
+	// 				{
+	// 					this.index.push(index);
+	// 					return true;
+	// 				}
+	// 		}, compareArrayLocations)
+
+	// 			if (compareArray.length == 4 && compareArray.every((x, index, arr) => ((x === 'red' || x === 'blue') && x === arr[0]))) {
+	// 				setWinningCircles(compareArrayLocations.index);
+	// 				return true
+	// 			};
+	// 		}
+	// 	}
+	// 	return false;
+	// }
+	// function checkLeftRightDiagonals(){
 	
-	let rows = props.numRows;
-		let cols = props.numCols;
-		for(let i = 0; i <= rows - 4; i++){
-			for(let j = cols - 1; j >= cols - 4; j--){
-				let compareArrayLocations = {
-				index:[]
-				}
-				let compareArray = filled.filter(function (x, index, arr) {
-					if(index == i*cols+j || 
-						index == (i+1)*cols+ (j-1) || 
-						index == (i+2)*cols+ (j-2) || 
-						index == (i+3)*cols+ (j-3)
-					&& (x === 'red'  || x === 'blue') 
-					&& ((arr[i*cols+j] == x) 
-					&& (arr[(i+1)*cols+(j-1)] === x)
-					&& (arr[(i+2)*cols+(j-2)] === x)
-					&& (arr[(i+3)*cols+(j-3)] === x)))
-					{
+	// let rows = numRows;
+	// 	let cols = numCols;
+	// 	for(let i = 0; i <= rows - 4; i++){
+	// 		for(let j = cols - 1; j >= cols - 4; j--){
+	// 			let compareArrayLocations = {
+	// 			index:[]
+	// 			}
+	// 			let compareArray = filled.filter(function (x, index, arr) {
+	// 				if(index == i*cols+j || 
+	// 					index == (i+1)*cols+ (j-1) || 
+	// 					index == (i+2)*cols+ (j-2) || 
+	// 					index == (i+3)*cols+ (j-3)
+	// 				&& (x === 'red'  || x === 'blue') 
+	// 				&& ((arr[i*cols+j] == x) 
+	// 				&& (arr[(i+1)*cols+(j-1)] === x)
+	// 				&& (arr[(i+2)*cols+(j-2)] === x)
+	// 				&& (arr[(i+3)*cols+(j-3)] === x)))
+	// 				{
 
-						this.index.push(index);
-						return true;
-					}
-			}, compareArrayLocations)
+	// 					this.index.push(index);
+	// 					return true;
+	// 				}
+	// 		}, compareArrayLocations)
 
-				if (compareArray.length == 4 && compareArray.every((x, index, arr) => ((x == 'red' || x == 'blue') && x == arr[0]))) {
-					setWinningCircles(compareArrayLocations.index);
-					return true
-				};
-			}
-		}
-		return false;
-	}
-	function checkRightLeftDiagonals(){
+	// 			if (compareArray.length == 4 && compareArray.every((x, index, arr) => ((x == 'red' || x == 'blue') && x == arr[0]))) {
+	// 				setWinningCircles(compareArrayLocations.index);
+	// 				return true
+	// 			};
+	// 		}
+	// 	}
+	// 	return false;
+	// }
+	// function checkRightLeftDiagonals(){
 		
-		let rows = props.numRows;
-		let cols = props.numCols;
-		for(let i = 0; i <= rows - 4; i++){
-			for(let j = 0; j <= cols - 4; j ++){
-				let compareArrayLocations = {
-					index:[]
-					}
-				let compareArray = filled.filter(function (x, index, arr) {
-				if (index == i*cols+j || 
-					  index == (i+1)*cols+ (j+1) || 
-					  index == (i+2)*cols+ (j+2) || 
-					  index == (i+3)*cols+ (j+3)
-					&& (x === 'red'  || x === 'blue') 
-					&& ((arr[i*cols+j] == x) 
-					&& (arr[(i+1)*cols+(j+1)] === x)
-					&& (arr[(i+2)*cols+(j+2)] === x)
-					&& (arr[(i+3)*cols+(j+3)] === x)))
-				{
-					this.index.push(index);
-					return true;
-				}
-		}, compareArrayLocations)
-				if (compareArray.length == 4 && compareArray.every((x, index, arr) => ((x === 'red' || x === 'blue') && x === arr[0]))) {
-					setWinningCircles(compareArrayLocations.index);
-					return true
-				};
-			}
-		}
-		return false;
-	}
-	function checkVerticalCells(){
-		let rows = props.numRows;
-		let cols = props.numCols;
-		for(let i = 0; i <= rows - 4; i++){
-			for(let j = 0; j < cols; j ++){
-				let compareArrayLocations = {
-					index:[]
-				}
-				let compareArray = filled.filter(function (x, index, arr) {
-					if((index == i*cols+j || 
-					index == (i+1)*cols+j || 
-					index == (i+2)*cols+j || 
-					index == (i+3)*cols+j)
-					&& (x === 'red'  || x === 'blue') 
-					&& ((arr[i*cols+j] == x) 
-					&& (arr[(i+1)*cols+j] === x)
-					&& (arr[(i+2)*cols+j] === x)
-					&& (arr[(i+3)*cols+j] === x)))
-					{
-						this.index.push(index);
-						return true;
-						}
-				}, compareArrayLocations);
-				if(compareArray.length == 4 && compareArray.every((x, index, arr) => ((x === 'red' || x === 'blue') && (x === arr[0])))) {
-					setWinningCircles(compareArrayLocations.index);
-					return true
-				};
-			}
-		}
-		return false;
-	}
+	// 	let rows = numRows;
+	// 	let cols = numCols;
+	// 	for(let i = 0; i <= rows - 4; i++){
+	// 		for(let j = 0; j <= cols - 4; j ++){
+	// 			let compareArrayLocations = {
+	// 				index:[]
+	// 				}
+	// 			let compareArray = filled.filter(function (x, index, arr) {
+	// 			if (index == i*cols+j || 
+	// 				  index == (i+1)*cols+ (j+1) || 
+	// 				  index == (i+2)*cols+ (j+2) || 
+	// 				  index == (i+3)*cols+ (j+3)
+	// 				&& (x === 'red'  || x === 'blue') 
+	// 				&& ((arr[i*cols+j] == x) 
+	// 				&& (arr[(i+1)*cols+(j+1)] === x)
+	// 				&& (arr[(i+2)*cols+(j+2)] === x)
+	// 				&& (arr[(i+3)*cols+(j+3)] === x)))
+	// 			{
+	// 				this.index.push(index);
+	// 				return true;
+	// 			}
+	// 	}, compareArrayLocations)
+	// 			if (compareArray.length == 4 && compareArray.every((x, index, arr) => ((x === 'red' || x === 'blue') && x === arr[0]))) {
+	// 				setWinningCircles(compareArrayLocations.index);
+	// 				return true
+	// 			};
+	// 		}
+	// 	}
+	// 	return false;
+	// }
+	// function checkVerticalCells(){
+	// 	let rows = numRows;
+	// 	let cols = numCols;
+	// 	for(let i = 0; i <= rows - 4; i++){
+	// 		for(let j = 0; j < cols; j ++){
+	// 			let compareArrayLocations = {
+	// 				index:[]
+	// 			}
+	// 			let compareArray = filled.filter(function (x, index, arr) {
+	// 				if((index == i*cols+j || 
+	// 				index == (i+1)*cols+j || 
+	// 				index == (i+2)*cols+j || 
+	// 				index == (i+3)*cols+j)
+	// 				&& (x === 'red'  || x === 'blue') 
+	// 				&& ((arr[i*cols+j] == x) 
+	// 				&& (arr[(i+1)*cols+j] === x)
+	// 				&& (arr[(i+2)*cols+j] === x)
+	// 				&& (arr[(i+3)*cols+j] === x)))
+	// 				{
+	// 					this.index.push(index);
+	// 					return true;
+	// 					}
+	// 			}, compareArrayLocations);
+	// 			if(compareArray.length == 4 && compareArray.every((x, index, arr) => ((x === 'red' || x === 'blue') && (x === arr[0])))) {
+	// 				setWinningCircles(compareArrayLocations.index);
+	// 				return true
+	// 			};
+	// 		}
+	// 	}
+	// 	return false;
+	// }
 	function changeTurn(){
 		let current = turn;
 		setTurn((current) =>{
@@ -235,7 +241,7 @@ export const Table = (props) => {
 				key={i}
 				changeTurn={changeTurn} 
 				rowNumber={i} 
-				numCols={props.numCols} 
+				numCols={numCols} 
 				addFilled={addFilled}
 				winningCircles={winningCircles}
 				/>)
@@ -256,7 +262,7 @@ export const Table = (props) => {
 				<div className={`background && ${gameOver && 'disabledDiv'}`}>
 					<table>
 						<tbody>
-							{renderRows(props.numRows)}
+							{renderRows(numRows)}
 						</tbody>
 					</table>
 				</div>

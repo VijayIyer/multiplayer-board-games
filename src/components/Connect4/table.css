@@ -2,6 +2,7 @@ table {
   border-spacing: 1em;
   margin: 1rem auto;
   border-collapse: separate;
+  height:1px;
 }
 .allowed{
   background-color: white;
@@ -13,10 +14,10 @@ td {
   cursor: pointer;
   background-color: grey;
 }
-.winning{
+/*.winning{
   border-color: white;
   border: 5px solid;
-}
+}*/
 .background{
   background-color:yellow;
 }
@@ -44,3 +45,21 @@ body {
 input {
   margin-right: 20px;
 }
+
+.winning {
+        animation: blinking 1s infinite;
+      }
+@keyframes blinking {
+        0% {
+          background-color: white;
+          border: 3px solid #666;
+        }
+        50% {
+          background-color: black;
+          border: 3px solid #666;
+        }
+        100% {
+          background-color: currentcolor;
+          border: 3px solid #666;
+        }
+      }
