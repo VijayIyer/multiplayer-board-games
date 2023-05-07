@@ -6,7 +6,7 @@ import './index.css'
 import Button from 'react-bootstrap/Button';
 
 export function OngoingGames() {
-	const socket  = useContext(appContext);
+	const { socket }  = useContext(appContext);
 	const [ongoingGames, setOngoingGames] = useState([]);
 	let id = null;
 	function updateOngoingGames(){

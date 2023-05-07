@@ -17,7 +17,7 @@ export function GameOverComponent(props){
 }
 
 export function TicTacToe () {
-		const socket = useContext(appContext);
+		const { socket, user } = useContext(appContext);
     const [squares, setSquares] = useState(null)
   const [winner, setWinner] = useState(null);
   const [highlightedSquares, setHighlightedSquares] = useState([]);

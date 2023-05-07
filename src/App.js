@@ -1,10 +1,13 @@
 import Container from 'react-bootstrap/Container';
+import axios from 'axios';
 import Button from 'react-bootstrap/Button';
 import { Navbar } from 'react-bootstrap';
-import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Link, Navigate } from "react-router-dom";
 import { ChooseGame } from './components/ChooseGame';
 import { OngoingGames } from './components/OngoingGames';
 import { Home } from './components/Home';
+import { Login } from './components/Login';
+import { Registration } from './components/Registration';
 import { PageNotFound } from './components/PageNotFound';
 import { TicTacToe } from './components/TicTacToe';
 import  { GameContextProvider } from './components/Connect4/gameContextProvider';
@@ -12,82 +15,73 @@ import { Connect4 } from './components/Connect4/index.jsx';
 import './App.css';
 import { appContext } from './AppContext';
 import io from 'socket.io-client';
-import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useEffect, useContext, useState } from 'react';
 
 function App() {
-
-  const socket = io('http://127.0.0.1:5000');
+  const [user, setUser] = useState(window.sessionStorage.getItem('token'));
+  const [userName, setUserName] = useState(null);
+  const [unAuthorized, setUnauthorizaed] = useState(false);
+  const socket = io(process.env.REACT_APP_SERVER_URL);
   useEffect(()=>{
-    socket.on('connect', ()=>{
-      console.log('connected!');
-    
-    })
+    if(user)
+      {
+        socket.on('connect', ()=>{
+        console.log('connected!');
+        })
+      }
+  }, [user])
 
-  }, [])
   return (
+    
     <div className="App">
-      <Container fluid>
+      
+      <appContext.Provider
+        value={{
+          user,
+          setUser,
+          socket,
+          userName, 
+          setUserName
+        }}>
+        <Container fluid>
 
-          <BrowserRouter>
-            <Routes>
-              <Route path='/' element={
-                <appContext.Provider value={
-                  socket
-                } >
-                <Home />
-                </appContext.Provider>
-              }/>
-              <Route path='/join' element={
-                <appContext.Provider value={
-                  socket
-                }>
-                  <OngoingGames />
-                </appContext.Provider>} />
-              <Route path='/newGame' element={<ChooseGame />}/>
-              <Route path="*" element={<PageNotFound />} />
-              <Route path="/game/tictactoe/:id" element={
-               <appContext.Provider value={
-                  socket
-                }>
-                <TicTacToe />
-              </appContext.Provider>
-            }/>
-            <Route path="/game/tictactoe" element={
-               <appContext.Provider value={
-                  socket
-                }>
-                <TicTacToe />
-              </appContext.Provider>
-            }/>
-              <Route path="/game/connect4/:id" element={
-               <appContext.Provider value={
-                  socket
-                }> 
+            <BrowserRouter>
+              <Routes>
+                <Route path='/' element={<Home />}/>
+                <Route path='/login' element={<Login />}/>
+                <Route path='/register' element={<Registration />}/>
+                <Route path='/join' element={<OngoingGames />}/>
+                <Route path='/newGame' element={<ChooseGame />}/>
+                <Route path="*" element={<PageNotFound />} />
+                <Route path="/game/tictactoe/:id" element={<TicTacToe />}/>
+              <Route path="/game/tictactoe" element={<TicTacToe />}/>
+                <Route path="/game/connect4/:id" element={
+                 <GameContextProvider>
+                      <Connect4 numRows={8} numCols={6} />
+                    </GameContextProvider>
+                  } />
+                <Route path="/game/connect4" element={
                   <GameContextProvider>
-                    <Connect4 numRows={8} numCols={6} />
-                  </GameContextProvider>
-                </appContext.Provider>
-              } />
-              <Route path="/game/connect4" element={
-               <appContext.Provider value={
-                  socket
-                }> 
-                  <GameContextProvider>
-                    <Connect4 numRows={8} numCols={6} />
-                  </GameContextProvider>
-                </appContext.Provider>
-              } />
-            </Routes>
-            <Navbar fixed="top" variant="primary">
-              <Link to="/">
-                <Navbar.Brand>
-                    Home
-                </Navbar.Brand>
-              </Link>
-            </Navbar>
-          </BrowserRouter>
-        
-      </Container>
+                      <Connect4 numRows={8} numCols={6} />
+                    </GameContextProvider>
+                  } />
+              </Routes>
+              <Navbar fixed="top" variant="primary">
+                <Link to="/">
+                  <Navbar.Brand>
+                      Home
+                  </Navbar.Brand>
+                </Link>
+                {userName ? 
+                <Navbar.Text class="float-right">
+                    {`Signed in as: ${userName}`}
+                  </Navbar.Text>
+                : <></>}
+              </Navbar>
+            </BrowserRouter>
+        </Container>
+      </appContext.Provider>
     </div>
   );
 }

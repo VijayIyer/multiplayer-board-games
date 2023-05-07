@@ -7,7 +7,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { gameContext } from './gameContext';
 
 export const GameContextProvider = (props) => {
-	const socket = useContext(appContext);
+	const { socket } = useContext(appContext);
 	const numRows = 8;  // needs to be dynamic
 	const numCols = 6;  // needs to be dynamic
 	const [moves, setMoves] = useState([]);
