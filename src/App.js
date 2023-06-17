@@ -21,7 +21,7 @@ import { useEffect, useContext, useState } from 'react';
 function App() {
   const [user, setUser] = useState(window.sessionStorage.getItem('token'));
   const [userName, setUserName] = useState(null);
-  const [unAuthorized, setUnauthorizaed] = useState(false);
+  const [unAuthorized, setUnauthorized] = useState(false);
   const socket = io(process.env.REACT_APP_SERVER_URL);
   useEffect(()=>{
     if(user)
@@ -29,7 +29,14 @@ function App() {
         socket.on('connect', ()=>{
         console.log('connected!');
         })
+
       }
+  }, [user])
+  useEffect(() =>{
+    socket.on('userUnauthorized', ()=>{
+        console.log(`user unauthorized`);
+        setUnauthorized(true);
+        })
   }, [user])
 
   return (

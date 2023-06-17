@@ -7,7 +7,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { gameContext } from './gameContext';
 
 export const GameContextProvider = (props) => {
-	const { socket } = useContext(appContext);
+	const { socket, user } = useContext(appContext);
 	const numRows = 8;  // needs to be dynamic
 	const numCols = 6;  // needs to be dynamic
 	const [moves, setMoves] = useState([]);
@@ -21,7 +21,7 @@ export const GameContextProvider = (props) => {
 	let { id } = useParams();
 	useEffect(()=>{
 		if(!id){
-        socket.emit('createConnect4Game', {'name':'vijay'});
+        socket.emit('createConnect4Game', {'token': user});
       }
 			else{
         socket.emit('getExistingConnect4Game', {'id' : id});

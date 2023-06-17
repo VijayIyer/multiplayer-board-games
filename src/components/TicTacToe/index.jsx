@@ -29,7 +29,8 @@ export function TicTacToe () {
 			console.log(`is id undefined ${!id}`)
 			// create new game and obtain id
       if(!id){
-        socket.emit('createTicTacToeGame', {'name':'vijay'});
+        console.log(`creating new game since id is undefined`);
+        socket.emit('createTicTacToeGame', {'token': user});
       }
       // join an existing game with a specific id
 			else{

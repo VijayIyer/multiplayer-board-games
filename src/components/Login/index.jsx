@@ -6,7 +6,7 @@ import { useContext } from 'react';
 import { appContext } from './../../AppContext'
 export function Login (props) {
   const navigate = useNavigate();
-  const { user, setUser} = useContext(appContext);
+  const { user, setUser, userName, setUserName} = useContext(appContext);
   const [email, setEmail] = useState(null);
   const [password, setPassword] = useState(null);
   const login = ()=>{
@@ -20,6 +20,7 @@ export function Login (props) {
       
       window.sessionStorage.setItem('token', res.data.token);
       setUser(window.sessionStorage.getItem('token'))
+      
       navigate('/');
     })
     .catch((err)=>{
