@@ -74,7 +74,7 @@ function App() {
                 />
                 <Route path='*' element={<PageNotFound />} />
               </Routes>
-            {!authorized && <UnauthorizedUser authorized={authorized}/>}
+            <UnauthorizedUser authorized={authorized}/>
             </BrowserRouter>
             
           </Container>
