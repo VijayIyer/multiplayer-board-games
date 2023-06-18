@@ -6,7 +6,7 @@ import { useContext } from "react";
 import { appContext } from "./../../AppContext";
 export function Login(props) {
   const navigate = useNavigate();
-  const { user, setUser, userName, setUserName } = useContext(appContext);
+  const { user, setUser, userName, setUserName, setAuthorized } = useContext(appContext);
   const [email, setEmail] = useState(null);
   const [password, setPassword] = useState(null);
   const login = () => {

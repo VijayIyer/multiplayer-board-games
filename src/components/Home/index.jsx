@@ -47,7 +47,7 @@ export function Home() {
   }, [user]);
 
   return (
-    <Container className='d-flex mt-5 gap-3 flex-column' fluid>
+    <Container className='d-flex gap-3 flex-column' fluid>
       <Row xs={4} lg={4} md={4}>
         <Col>
           <Link to='/newGame' style={{ textDecoration: "none" }}>
