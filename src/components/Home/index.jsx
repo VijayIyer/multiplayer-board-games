@@ -63,7 +63,7 @@ export function Home() {
           return (
             <Col xs={2} sm={2} lg={2} md={2}>
               <Card>
-                <Card.Header>{`${game.type}`}</Card.Header>
+                <Card.Header>{`${game.type} #${game.gameId}`}</Card.Header>
                 <Card.Body>
                   {game.users.map((user) => {
                     return <Card.Text>{user}</Card.Text>;
