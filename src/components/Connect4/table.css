@@ -2,9 +2,9 @@ table {
   border-spacing: 1em;
   margin: 1rem auto;
   border-collapse: separate;
-  height:1px;
+  height: 1px;
 }
-.allowed{
+.allowed {
   background-color: white;
 }
 td {
@@ -18,8 +18,8 @@ td {
   border-color: white;
   border: 5px solid;
 }*/
-.background{
-  background-color:yellow;
+.background {
+  background-color: yellow;
 }
 /*#border-separate:checked ~ table {
   border-collapse: separate;
@@ -28,38 +28,37 @@ td {
 #border-collapse:checked ~ table {
   border-collapse: collapse;
 }*/
-.red-fill{
+.red-fill {
   background-color: red;
 }
-.blue-fill{
+.blue-fill {
   background-color: blue;
 }
-.disabledDiv{
+.disabledDiv {
   pointer-events: none;
   opacity: 0.6;
 }
 body {
-  align-self:center;
-  
+  align-self: center;
 }
 input {
   margin-right: 20px;
 }
 
 .winning {
-        animation: blinking 1s infinite;
-      }
+  animation: blinking 1s infinite;
+}
 @keyframes blinking {
-        0% {
-          background-color: white;
-          border: 3px solid #666;
-        }
-        50% {
-          background-color: black;
-          border: 3px solid #666;
-        }
-        100% {
-          background-color: currentcolor;
-          border: 3px solid #666;
-        }
-      }
+  0% {
+    background-color: white;
+    border: 3px solid #666;
+  }
+  50% {
+    background-color: black;
+    border: 3px solid #666;
+  }
+  100% {
+    background-color: currentcolor;
+    border: 3px solid #666;
+  }
+}
