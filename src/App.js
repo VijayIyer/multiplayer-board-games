@@ -24,6 +24,7 @@ function App() {
 
   useEffect(() => {
     socket.on("userUnauthorized", () => {
+      console.log(`user does not have token`);
       setAuthorized(false);
     });
   }, [user]);
@@ -45,7 +46,7 @@ function App() {
         >
           <Container fluid>
             <BrowserRouter>
-              <UnauthorizedUser authorized={authorized} />
+              
               <NavBarHeader />
               <Routes>
                 <Route path='/' element={<Home />} />
@@ -73,7 +74,9 @@ function App() {
                 />
                 <Route path='*' element={<PageNotFound />} />
               </Routes>
+            {!authorized && <UnauthorizedUser authorized={authorized}/>}
             </BrowserRouter>
+            
           </Container>
         </appContext.Provider>
       </div>

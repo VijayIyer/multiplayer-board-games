@@ -96,7 +96,7 @@ export function TicTacToe() {
 
   const handleMove = (pos) => {
     console.log(`gameId - ${gameId}, squares that was clicked: ${pos}`);
-    socket.emit("move", { pos: pos, gameId: gameId, token: user }, (data) => {
+    socket.emit("move", { pos: pos, gameId: gameId }, (data) => {
       console.log(`gameId at this point ${gameId}`);
       setSquares(data.squares);
       setTurn(data.turn);

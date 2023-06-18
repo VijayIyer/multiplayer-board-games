@@ -4,10 +4,12 @@ import { useEffect, useState } from 'react';
 export default function UnauthorizedUser({ authorized }){
 	const [show, setShow] = useState(false);
 	useEffect(()=>{
+		console.log(`authorized prop value changed`);
 		setShow(!authorized);
-	}, [show])
+	}, [authorized])
+	const handleClose = ()=>setShow(false);
 	return (
-		<div className={`modal ${show ? 'show': ''}`}>
+		<Modal onHide={handleClose} show={show}>
 			<Modal.Dialog>
 	        <Modal.Header closeButton>
 	          <Modal.Title>Login Failed / No Token</Modal.Title>
@@ -18,10 +20,10 @@ export default function UnauthorizedUser({ authorized }){
 	        </Modal.Body>
 
 	        <Modal.Footer>
-	          <Button variant="secondary"><Link to='/login'>Go to login</Link></Button>
+	          <Button onClick={handleClose} variant="outline-dark"><Link to='/login' style={{textDecoration:'none'}}>Go to login</Link></Button>
 	          
 	        </Modal.Footer>
 	      </Modal.Dialog>
-    </div>
+    </Modal>
 		)
 }
