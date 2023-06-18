@@ -24,74 +24,74 @@ export function TicTacToe () {
   const [turn, setTurn] = useState(0);
   const [gameId, setGameId] = useState(-1);
   const [gameOver, setGameOver] = useState(false);
-    let { id } = useParams()
-		useEffect(()=>{
-			console.log(`is id undefined ${!id}`)
-			// create new game and obtain id
-      if(!id){
-        console.log(`creating new game since id is undefined`);
-        socket.emit('createTicTacToeGame', {'token': user});
-      }
-      // join an existing game with a specific id
-			else{
-        socket.emit('getExistingTicTacToeGame', {'id' : id});
-      }
-    }, []);
+  let { id } = useParams()
+	useEffect(()=>{
+		console.log(`is id undefined ${!id}`)
+		// create new game and obtain id
+    if(!id){
+      console.log(`creating new game since id is undefined`);
+      socket.emit('createTicTacToeGame', {'token': user});
+    }
+    // join an existing game with a specific id
+		else{
+      socket.emit('getExistingTicTacToeGame', {'id' : id, 'token':user});
+    }
+  }, []);
       // get details about newly created game
-    useEffect(()=>{
-      console.log(`newGame details outside stuff should only be called once`)
-      socket.on('newGameDetails', (data)=>{
-				console.log(`here's the data to create a tic tac toe game ${JSON.stringify(data)}`);
-				setSquares(data.squares);
-				setGameId(data.id);
-        setTurn(data.turn);
-        if(winner) {
-          setHighlightedSquares(data.winner)
-        }
-        setWinner(data.winner)
-			});
-    }, [gameId]);
+  useEffect(()=>{
+    console.log(`newGame details outside stuff should only be called once`)
+    socket.on('newGameDetails', (data)=>{
+			console.log(`here's the data to create a tic tac toe game ${JSON.stringify(data)}`);
+			setSquares(data.squares);
+			setGameId(data.id);
+      setTurn(data.turn);
+      if(winner) {
+        setHighlightedSquares(data.winner)
+      }
+      setWinner(data.winner)
+		});
+  }, [gameId]);
       // get details about a game you just joined
-    useEffect(()=>{
-      socket.on('ongoingGameDetails', (data)=>{
-        console.log(`here's the ongoing game data ${JSON.stringify(data)}`);
-        setSquares(data.squares);
-        setTurn(data.turn);
-        setGameId(data.id);
-        if(winner) {
-          setHighlightedSquares(data.winner)
-        }
-        setWinner(data.winner)
-      });
-    }, [gameId])
+  useEffect(()=>{
+    socket.on('ongoingGameDetails', (data)=>{
+      console.log(`here's the ongoing game data ${JSON.stringify(data)}`);
+      setSquares(data.squares);
+      setTurn(data.turn);
+      setGameId(data.id);
+      if(winner) {
+        setHighlightedSquares(data.winner)
+      }
+      setWinner(data.winner)
+    });
+  }, [gameId])
       // recieve update when opponent makes a move
-    useEffect(()=>{
-      socket.on('opponentMadeMove', (data)=>{
-        console.log(`opponent made move - id:${data.id} gameId:${gameId}`);
-        if(data.id == gameId){
-          console.log(`opponent made move - ${JSON.stringify(data)}`);
-          setSquares(data.squares);
-          setTurn(data.turn);  
-        }
-        
-      });
-    }, [gameId]);
+  useEffect(()=>{
+    socket.on('opponentMadeMove', (data)=>{
+      console.log(`opponent made move - id:${data.id} gameId:${gameId}`);
+      if(data.id == gameId){
+        console.log(`opponent made move - ${JSON.stringify(data)}`);
+        setSquares(data.squares);
+        setTurn(data.turn);  
+      }
+      
+    });
+  }, [gameId]);
       // notification recieved when either win or lose or draw
-    useEffect(()=>{
-      socket.on('gameOver', (data)=>{
-        console.log(`gameOver event sent by server!! dataid: ${data.id}, gameId:${gameId}`);
-        if(data.id == gameId){
-          setGameOver(true);
-          setHighlightedSquares(data.winningSquares)
-          setWinner(data.winningSquares)
-          setTurn(data.turn);  
-        }
-      });
-    }, [gameId])
+  useEffect(()=>{
+    socket.on('gameOver', (data)=>{
+      console.log(`gameOver event sent by server!! dataid: ${data.id}, gameId:${gameId}`);
+      if(data.id == gameId){
+        setGameOver(true);
+        setHighlightedSquares(data.winningSquares)
+        setWinner(data.winningSquares)
+        setTurn(data.turn);  
+      }
+    });
+  }, [gameId])
 	
   const handleMove = (pos) => {
   		console.log(`gameId - ${gameId}, squares that was clicked: ${pos}`);
-  		socket.emit('move', {'pos':pos, 'gameId':gameId}, (data)=>{
+  		socket.emit('move', {'pos':pos, 'gameId':gameId, 'token':user}, (data)=>{
         console.log(`gameId at this point ${gameId}`)
         setSquares(data.squares);
         setTurn(data.turn);

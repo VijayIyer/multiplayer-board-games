@@ -3,9 +3,11 @@ import { useContext, useEffect, useState } from 'react';
 import Container from 'react-bootstrap/Container';
 import './table.css'
 import { gameContext } from './gameContext';
+import { appContext } from './../../AppContext';
 import 'bootstrap/dist/css/bootstrap.min.css';
 const Cell = (props) =>{
 	const { filled, allowed, winningCircles, turn, setTurn, setAllowed, numCols } = useContext(gameContext);
+	const { socket, user} = useContext(appContext);
 	// const [fill, setFill] = useState(false);
 	// const [fillColor, setFillColor] = useState(turn)
 	
@@ -37,7 +39,7 @@ const Row = (props) =>
 		let cols = [];
 		for(let i = 0; i < numCols; i++){
 			const cell = props.rowNumber * numCols + i;
-			console.log(`cell number in Row is  - ${cell}`)
+			// console.log(`cell number in Row is  - ${cell}`)
 			cols.push(
 				(
 					<Cell 
@@ -57,7 +59,7 @@ const Row = (props) =>
 }
 
 export const Table = (props) => {
-
+const { socket, user} = useContext(appContext);
 	const { 
 		gameId, 
 		filled, 
@@ -70,7 +72,6 @@ export const Table = (props) => {
 		setTurn, 
 		gameOver, 
 		setGameOver,
-		socket,
 		numRows,
 		numCols
 	} = useContext(gameContext);
@@ -84,149 +85,16 @@ export const Table = (props) => {
 	function addFilled(cellNumber){
 		// let filledCells = filled;
 		// filledCells[cellNumber] =  turn;
-		console.log(`playing move on ${cellNumber}, game ${gameId}`)
+		// console.log(`playing move on ${cellNumber}, game ${gameId}`)
 		if(!gameOver){
 			socket.emit('connect4Move', {
 			'gameId':gameId,
-			'cellNumber':cellNumber
+			'cellNumber':cellNumber,
+			'token':user
 			});
 		}
 	}
-	// function isGameOver(){
-	// 	return checkVerticalCells()
-	// 	|| checkHorizontalCells() 
-	// 	|| checkLeftRightDiagonals()
-	// 	|| checkRightLeftDiagonals();
-	// }
-	// function checkHorizontalCells(){
-	// 	let rows = numRows;
-	// 	let cols = numCols;
-	// 	for(let i = 0; i < rows; i++){
-	// 		for(let j = 0; j <= cols - 4; j ++){
-	// 			let compareArrayLocations = {
-	// 			index:[]
-	// 			}
-	// 			let compareArray =  filled.filter(function (x, index, arr) {
-	// 				if(index == i*cols+j || 
-	// 					index == i*cols+ (j + 1) || 
-	// 					index == i*cols+ (j + 2) || 
-	// 					index == i*cols+ (j + 3)
-	// 				&& (x === 'red'  || x === 'blue') 
-	// 				&& ((arr[i*cols+j] === x) 
-	// 				&& (arr[i*cols+(j+1)]=== x)
-	// 				&& (arr[i*cols+(j+2)]=== x)
-	// 				&& (arr[i*cols+(j+3)]=== x)))
-	// 				{
-	// 					this.index.push(index);
-	// 					return true;
-	// 				}
-	// 		}, compareArrayLocations)
 
-	// 			if (compareArray.length == 4 && compareArray.every((x, index, arr) => ((x === 'red' || x === 'blue') && x === arr[0]))) {
-	// 				setWinningCircles(compareArrayLocations.index);
-	// 				return true
-	// 			};
-	// 		}
-	// 	}
-	// 	return false;
-	// }
-	// function checkLeftRightDiagonals(){
-	
-	// let rows = numRows;
-	// 	let cols = numCols;
-	// 	for(let i = 0; i <= rows - 4; i++){
-	// 		for(let j = cols - 1; j >= cols - 4; j--){
-	// 			let compareArrayLocations = {
-	// 			index:[]
-	// 			}
-	// 			let compareArray = filled.filter(function (x, index, arr) {
-	// 				if(index == i*cols+j || 
-	// 					index == (i+1)*cols+ (j-1) || 
-	// 					index == (i+2)*cols+ (j-2) || 
-	// 					index == (i+3)*cols+ (j-3)
-	// 				&& (x === 'red'  || x === 'blue') 
-	// 				&& ((arr[i*cols+j] == x) 
-	// 				&& (arr[(i+1)*cols+(j-1)] === x)
-	// 				&& (arr[(i+2)*cols+(j-2)] === x)
-	// 				&& (arr[(i+3)*cols+(j-3)] === x)))
-	// 				{
-
-	// 					this.index.push(index);
-	// 					return true;
-	// 				}
-	// 		}, compareArrayLocations)
-
-	// 			if (compareArray.length == 4 && compareArray.every((x, index, arr) => ((x == 'red' || x == 'blue') && x == arr[0]))) {
-	// 				setWinningCircles(compareArrayLocations.index);
-	// 				return true
-	// 			};
-	// 		}
-	// 	}
-	// 	return false;
-	// }
-	// function checkRightLeftDiagonals(){
-		
-	// 	let rows = numRows;
-	// 	let cols = numCols;
-	// 	for(let i = 0; i <= rows - 4; i++){
-	// 		for(let j = 0; j <= cols - 4; j ++){
-	// 			let compareArrayLocations = {
-	// 				index:[]
-	// 				}
-	// 			let compareArray = filled.filter(function (x, index, arr) {
-	// 			if (index == i*cols+j || 
-	// 				  index == (i+1)*cols+ (j+1) || 
-	// 				  index == (i+2)*cols+ (j+2) || 
-	// 				  index == (i+3)*cols+ (j+3)
-	// 				&& (x === 'red'  || x === 'blue') 
-	// 				&& ((arr[i*cols+j] == x) 
-	// 				&& (arr[(i+1)*cols+(j+1)] === x)
-	// 				&& (arr[(i+2)*cols+(j+2)] === x)
-	// 				&& (arr[(i+3)*cols+(j+3)] === x)))
-	// 			{
-	// 				this.index.push(index);
-	// 				return true;
-	// 			}
-	// 	}, compareArrayLocations)
-	// 			if (compareArray.length == 4 && compareArray.every((x, index, arr) => ((x === 'red' || x === 'blue') && x === arr[0]))) {
-	// 				setWinningCircles(compareArrayLocations.index);
-	// 				return true
-	// 			};
-	// 		}
-	// 	}
-	// 	return false;
-	// }
-	// function checkVerticalCells(){
-	// 	let rows = numRows;
-	// 	let cols = numCols;
-	// 	for(let i = 0; i <= rows - 4; i++){
-	// 		for(let j = 0; j < cols; j ++){
-	// 			let compareArrayLocations = {
-	// 				index:[]
-	// 			}
-	// 			let compareArray = filled.filter(function (x, index, arr) {
-	// 				if((index == i*cols+j || 
-	// 				index == (i+1)*cols+j || 
-	// 				index == (i+2)*cols+j || 
-	// 				index == (i+3)*cols+j)
-	// 				&& (x === 'red'  || x === 'blue') 
-	// 				&& ((arr[i*cols+j] == x) 
-	// 				&& (arr[(i+1)*cols+j] === x)
-	// 				&& (arr[(i+2)*cols+j] === x)
-	// 				&& (arr[(i+3)*cols+j] === x)))
-	// 				{
-	// 					this.index.push(index);
-	// 					return true;
-	// 					}
-	// 			}, compareArrayLocations);
-	// 			if(compareArray.length == 4 && compareArray.every((x, index, arr) => ((x === 'red' || x === 'blue') && (x === arr[0])))) {
-	// 				setWinningCircles(compareArrayLocations.index);
-	// 				return true
-	// 			};
-	// 		}
-	// 	}
-	// 	return false;
-	// }
 	function changeTurn(){
 		let current = turn;
 		setTurn((current) =>{

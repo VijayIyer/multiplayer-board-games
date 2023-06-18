@@ -24,7 +24,7 @@ export const GameContextProvider = (props) => {
         socket.emit('createConnect4Game', {'token': user});
       }
 			else{
-        socket.emit('getExistingConnect4Game', {'id' : id});
+        socket.emit('getExistingConnect4Game', {'id' : id, 'token':user});
       }
 	}, []);
 
@@ -89,7 +89,6 @@ export const GameContextProvider = (props) => {
 	<gameContext.Provider 
 	value={{
 		gameId, 
-		socket,
 		filled,
 		setFilled,
 		allowed, 
