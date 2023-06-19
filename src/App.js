@@ -13,20 +13,19 @@ import { Connect4 } from "./components/Connect4/index.jsx";
 import UnauthorizedUser from './components/UnauthorizedUser';
 import "./App.css";
 import { appContext } from "./AppContext";
-import io from "socket.io-client";
+import { socket } from './socket';
 import { useEffect, useState } from "react";
 
 function App() {
   const [user, setUser] = useState(window.sessionStorage.getItem("token"));
   const [userName, setUserName] = useState(null);
   const [authorized, setAuthorized] = useState(true);
-  const socket = io(process.env.REACT_APP_SERVER_URL);
-
+  const handleTokenError = () => setAuthorized(false);
   useEffect(() => {
-    socket.on("userUnauthorized", () => {
-      console.log(`user does not have token`);
-      setAuthorized(false);
-    });
+    socket.on("userUnauthorized", handleTokenError);
+    return ()=>{
+      socket.off("userUnauthorized", handleTokenError);
+    }
   }, [user]);
 
   return (

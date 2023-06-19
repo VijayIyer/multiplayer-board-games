@@ -42,6 +42,16 @@ export const GameContextProvider = (props) => {
         setAllowed(data.allowed);  
       }
     });
+    return ()=>{
+      socket.off("newGameDetails", (data)=>{
+         if(data.type === 'Connect4'){
+          setGameId(data.id);
+          setTurn(data.turn == 1 ? "blue" : "red");
+          setFilled(data.filled);
+          setAllowed(data.allowed);  
+        } 
+      })
+    }
   }, []);
   useEffect(() => {
     socket.on("ongoingGameDetails", (data) => {
@@ -57,8 +67,22 @@ export const GameContextProvider = (props) => {
         setWinningCircles(data.winningCircles);  
       }
     });
+    return ()=>{
+      socket.off("ongoingGameDetails", (data)=>{
+        console.log(
+        `existing connect4 game details - ${JSON.stringify(data)}, ${gameId}`
+      );
+      if(data.type === 'Connect4'){
+        console.log(`existing connect4 game details - ${JSON.stringify(data)}`);
+        setGameId(data.id);
+        setTurn(data.turn == 1 ? "blue" : "red");
+        setFilled(data.filled);
+        setAllowed(data.allowed);
+        setWinningCircles(data.winningCircles);  
+      } 
+      })
+    }
   }, [gameId]);
-
   useEffect(() => {
     socket.on("connect4MoveSuccess", (data) => {
       console.log(`a move was played - ${JSON.stringify(data)}`);
@@ -70,8 +94,19 @@ export const GameContextProvider = (props) => {
         setAllowed(data.allowed);
       }
     });
+    return ()=>{
+      socket.off("connect4MoveSuccess", (data) => {
+        console.log(`a move was played - ${JSON.stringify(data)}`);
+        if (data.id == gameId) {
+          console.log(`a move was played - ${JSON.stringify(data)}`);
+          setTurn(data.turn == 1 ? "blue" : "red");
+          setMoves((moves) => filled.filter((x, i) => x != -1));
+          setFilled(data.filled);
+          setAllowed(data.allowed);
+        }
+      })
+    }
   }, [gameId]);
-
   useEffect(() => {
     socket.on("connect4gameover", (data) => {
       if (data.id == gameId) {
@@ -85,6 +120,20 @@ export const GameContextProvider = (props) => {
         setWinningCircles(data.winningCircles);
       }
     });
+    return ()=>{
+      socket.off("connect4gameover", (data) => {
+        if (data.id == gameId) {
+            setTurn(data.turn == 1 ? "blue" : "red");
+            setFilled(data.filled);
+            setAllowed(data.allowed);
+            setGameOver(true);
+            console.log(
+              `winning circles are  - ${JSON.stringify(data.winningCircles)}`
+            );
+            setWinningCircles(data.winningCircles);
+          }
+        })
+    }
   }, [gameId]);
   useEffect(() => {
     socket.on("moveNotAllowed", () => {

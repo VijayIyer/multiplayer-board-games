@@ -27,6 +27,20 @@ export function TicTacToe() {
   const [gameId, setGameId] = useState(-1);
   const [gameOver, setGameOver] = useState(false);
   let { id } = useParams();
+  const populateGame = (data) => {
+    console.log(
+      `here's the data to create a tic tac toe game ${JSON.stringify(data)}`
+    );
+    if(data.type === 'Tic Tac Toe'){
+      setSquares(data.squares);
+      setGameId(data.id);
+      setTurn(data.turn);
+      if (winner) {
+        setHighlightedSquares(data.winner);
+      }
+    setWinner(data.winner);
+    }
+  }
   useEffect(() => {
     console.log(`is id undefined ${!id}`);
     // create new game and obtain id
@@ -41,34 +55,17 @@ export function TicTacToe() {
   }, []);
   // get details about newly created game
   useEffect(() => {
-    console.log(`newGame details outside stuff should only be called once`);
-    socket.on("newGameDetails", (data) => {
-      console.log(
-        `here's the data to create a tic tac toe game ${JSON.stringify(data)}`
-      );
-      setSquares(data.squares);
-      setGameId(data.id);
-      setTurn(data.turn);
-      if (winner) {
-        setHighlightedSquares(data.winner);
-      }
-      setWinner(data.winner);
-    });
+    socket.on("newGameDetails", (data)=>populateGame(data));
+    return ()=>{
+      socket.off("newGameDetails", (data)=>populateGame(data));
+    }
   }, [gameId]);
   // get details about a game you just joined
   useEffect(() => {
-    socket.on("ongoingGameDetails", (data) => {
-      console.log(`here's the ongoing game data ${JSON.stringify(data)}`);
-      if(data.type === 'Tic Tac Toe'){
-          setSquares(data.squares);
-          setTurn(data.turn);
-          setGameId(data.id);
-          if (winner) {
-            setHighlightedSquares(data.winner);
-          }
-          setWinner(data.winner);  
-      }
-    });
+    socket.on("ongoingGameDetails", (data) => populateGame(data));
+    return ()=>{
+      socket.off("ongoingGameDetails", (data) => populateGame(data));
+    }
   }, [gameId]);
   // recieve update when opponent makes a move
   useEffect(() => {
@@ -80,6 +77,16 @@ export function TicTacToe() {
         setTurn(data.turn);
       }
     });
+    return ()=>{
+      socket.off("opponentMadeMove", (data) => {
+        console.log(`opponent made move - id:${data.id} gameId:${gameId}`);
+        if (data.id == gameId) {
+          console.log(`opponent made move - ${JSON.stringify(data)}`);
+          setSquares(data.squares);
+          setTurn(data.turn);
+        }
+      })
+    }
   }, [gameId]);
   // notification recieved when either win or lose or draw
   useEffect(() => {
@@ -94,6 +101,20 @@ export function TicTacToe() {
         setTurn(data.turn);
       }
     });
+
+    return ()=>{
+      socket.off("gameOver", (data) => {
+      console.log(
+        `gameOver event sent by server!! dataid: ${data.id}, gameId:${gameId}`
+      );
+      if (data.id == gameId) {
+        setGameOver(true);
+        setHighlightedSquares(data.winningSquares);
+        setWinner(data.winningSquares);
+        setTurn(data.turn);
+      }
+      })
+    }
   }, [gameId]);
 
   const handleMove = (pos) => {
