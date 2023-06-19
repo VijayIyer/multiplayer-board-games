@@ -33,12 +33,14 @@ export const GameContextProvider = (props) => {
   }, []);
 
   useEffect(() => {
-    socket.on("newConnect4GameDetails", (data) => {
+    socket.on("newGameDetails", (data) => {
       console.log(`new connect4 game details - ${JSON.stringify(data)}`);
-      setGameId(data.id);
-      setTurn(data.turn == 1 ? "blue" : "red");
-      setFilled(data.filled);
-      setAllowed(data.allowed);
+      if(data.type === 'Connect4'){
+        setGameId(data.id);
+        setTurn(data.turn == 1 ? "blue" : "red");
+        setFilled(data.filled);
+        setAllowed(data.allowed);  
+      }
     });
   }, []);
   useEffect(() => {

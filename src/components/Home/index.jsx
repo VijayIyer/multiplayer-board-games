@@ -15,13 +15,9 @@ export function Home() {
     });
   }
   const joinGame = (gameId)=>{
-    socket.emit('joinGame', { 'id':gameId, 'token':user });
-  }
-  useEffect(() => {
-    updateOngoingGames();
-  }, []);
-  useEffect(()=>{
-    socket.on('joinedGame', (data)=>{
+    console.log(`sending event to join game ${gameId}`);
+    socket.emit('joinGame', { 'id':gameId, 'token':user }, (data)=>{
+      console.log(`joined game ${JSON.stringify(data)}`);
       let route;
       switch(data.type){
         case 'Tic Tac Toe':
@@ -35,7 +31,11 @@ export function Home() {
       }
       navigate(route);
     });
-  }, [])
+  }
+  useEffect(() => {
+    updateOngoingGames();
+  }, []);
+  
   useEffect(() => {
     socket.emit("getAllOngoingGames", (data) => {
       console.log(`getting all onging games :${JSON.stringify(data)}`);
@@ -77,7 +77,7 @@ export function Home() {
         </Col>
         {ongoingGames.map((game, index) => {
           return (
-            <Col xs={2} sm={2} lg={2} md={2}>
+            <Col xs={3} sm={3} lg={3} md={3}>
               <Card>
                 <Card.Header>{`${game.type} #${game.gameId}`}</Card.Header>
                 <Card.Body>
