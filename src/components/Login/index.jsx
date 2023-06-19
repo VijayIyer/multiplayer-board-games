@@ -9,10 +9,11 @@ export function Login(props) {
   const { user, setUser, userName, setUserName, setAuthorized } = useContext(appContext);
   const [email, setEmail] = useState(null);
   const [password, setPassword] = useState(null);
+  const URL = process.env.REACT_APP_SERVER_URL;
   const login = () => {
     console.log(`email: ${email}, password:${password}`);
     axios
-      .post("http://127.0.0.1:5000/login", {
+      .post(`${URL}/login`, {
         email: email,
         password: password,
         remember: true,
