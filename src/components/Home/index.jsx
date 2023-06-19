@@ -6,20 +6,36 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 export function Home() {
   const navigate = useNavigate();
-  const { user, setUser, userName, setUserName, socket } =
-    useContext(appContext);
+  const { user, setUser, userName, setUserName, socket } = useContext(appContext);
   const [ongoingGames, setOngoingGames] = useState([]);
-  let id = null;
   function updateOngoingGames() {
     socket.on("newGameCreated", (data) => {
       console.log(JSON.stringify(data));
       setOngoingGames((ongoingGames) => [...ongoingGames, data]); // append and return new array reference
     });
   }
-
+  const joinGame = (gameId)=>{
+    socket.emit('joinGame', { 'id':gameId, 'token':user });
+  }
   useEffect(() => {
     updateOngoingGames();
   }, []);
+  useEffect(()=>{
+    socket.on('joinedGame', (data)=>{
+      let route;
+      switch(data.type){
+        case 'Tic Tac Toe':
+          route = `/game/tictactoe/${data.gameId}`;
+          break;
+        case 'Connect4':
+          route = `/game/connect4/${data.gameId}`;
+          break;
+        default:
+          break;
+      }
+      navigate(route);
+    });
+  }, [])
   useEffect(() => {
     socket.emit("getAllOngoingGames", (data) => {
       console.log(`getting all onging games :${JSON.stringify(data)}`);
@@ -72,14 +88,18 @@ export function Home() {
                 <Card.Footer>
                   <Card.Link>
                     {game.type === "Tic Tac Toe" && (
-                      <Link to={`/game/tictactoe/${game.gameId}`}>
-                        <Button variant='outline-dark'>Join</Button>
-                      </Link>
+                      <Button 
+                        onClick={()=>joinGame(game.gameId)} 
+                        variant='outline-dark'>
+                        Join
+                      </Button>
                     )}
                     {game.type === "Connect4" && (
-                      <Link to={`/game/connect4/${game.gameId}`}>
-                        <Button variant='outline-dark'>Join</Button>
-                      </Link>
+                      <Button 
+                        onClick={()=>joinGame(game.gameId)} 
+                        variant='outline-dark'>
+                        Join
+                      </Button>
                     )}
                   </Card.Link>
                 </Card.Footer>

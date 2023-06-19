@@ -42,17 +42,18 @@ export const GameContextProvider = (props) => {
     });
   }, []);
   useEffect(() => {
-    socket.on("ongoingConnect4GameDetails", (data) => {
+    socket.on("ongoingGameDetails", (data) => {
       console.log(
         `existing connect4 game details - ${JSON.stringify(data)}, ${gameId}`
       );
-
-      console.log(`existing connect4 game details - ${JSON.stringify(data)}`);
-      setGameId(data.id);
-      setTurn(data.turn == 1 ? "blue" : "red");
-      setFilled(data.filled);
-      setAllowed(data.allowed);
-      setWinningCircles(data.winningCircles);
+      if(data.type === 'Connect4'){
+        console.log(`existing connect4 game details - ${JSON.stringify(data)}`);
+        setGameId(data.id);
+        setTurn(data.turn == 1 ? "blue" : "red");
+        setFilled(data.filled);
+        setAllowed(data.allowed);
+        setWinningCircles(data.winningCircles);  
+      }
     });
   }, [gameId]);
 

@@ -59,13 +59,15 @@ export function TicTacToe() {
   useEffect(() => {
     socket.on("ongoingGameDetails", (data) => {
       console.log(`here's the ongoing game data ${JSON.stringify(data)}`);
-      setSquares(data.squares);
-      setTurn(data.turn);
-      setGameId(data.id);
-      if (winner) {
-        setHighlightedSquares(data.winner);
+      if(data.type === 'Tic Tac Toe'){
+          setSquares(data.squares);
+          setTurn(data.turn);
+          setGameId(data.id);
+          if (winner) {
+            setHighlightedSquares(data.winner);
+          }
+          setWinner(data.winner);  
       }
-      setWinner(data.winner);
     });
   }, [gameId]);
   // recieve update when opponent makes a move
