@@ -2,14 +2,9 @@ import { Modal, Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 export default function UnauthorizedUser({ authorized }){
-	const [show, setShow] = useState(false);
-	useEffect(()=>{
-		console.log(`authorized prop value changed`);
-		setShow(!authorized);
-	}, [authorized])
-	const handleClose = ()=>setShow(false);
+	const handleClose = ()=>{}
 	return (
-		<Modal onHide={handleClose} show={show}>
+		<Modal onHide={handleClose} show={!authorized}>
 			<Modal.Dialog>
 	        <Modal.Header closeButton>
 	          <Modal.Title>Login Failed / No Token</Modal.Title>

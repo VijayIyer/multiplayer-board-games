@@ -54,19 +54,7 @@ export function TicTacToe() {
     }
   }, []);
   // get details about newly created game
-  useEffect(() => {
-    socket.on("newGameDetails", (data)=>populateGame(data));
-    return ()=>{
-      socket.off("newGameDetails", (data)=>populateGame(data));
-    }
-  }, [gameId]);
-  // get details about a game you just joined
-  useEffect(() => {
-    socket.on("ongoingGameDetails", (data) => populateGame(data));
-    return ()=>{
-      socket.off("ongoingGameDetails", (data) => populateGame(data));
-    }
-  }, [gameId]);
+  
   // recieve update when opponent makes a move
   useEffect(() => {
     socket.on("opponentMadeMove", (data) => {

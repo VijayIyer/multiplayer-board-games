@@ -62,6 +62,27 @@ export function Home() {
     }
   }, [user]);
 
+  useEffect(() => {
+        socket.on("newGameDetails", (data)=>{
+          if(data.type === 'TicTacToe'){
+            navigate(`/game/tictactoe/${data.id}`, { state : data});
+            }
+          else if (data.type === 'Connect4'){
+            navigate(`/game/connect4/${data.id}`, { state: data});
+            }
+        });
+        return ()=>{
+          socket.off("newGameDetails", (data)=>{
+          if(data.type === 'TicTacToe'){
+            navigate(`/game/tictactoe/${data.id}`, { state : data});
+            }
+          else if (data.type === 'Connect4'){
+            navigate(`/game/connect4/${data.id}`, { state: data});
+            }
+          });
+        }
+    }, []);
+
   return (
     <Container className='d-flex gap-3 flex-column' fluid>
       <Row xs={4} lg={4} md={4}>
