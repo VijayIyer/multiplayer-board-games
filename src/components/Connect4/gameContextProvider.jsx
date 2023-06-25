@@ -26,9 +26,9 @@ export const GameContextProvider = (props) => {
   let { id } = useParams();
   useEffect(() => {
     if (!id) {
-      socket.emit("createConnect4Game", { token: user });
+      socket.emit("createNewGame", { token: user, type:'Connect4' });
     } else {
-      socket.emit("getExistingConnect4Game", { id: id, token: user });
+      socket.emit("getExistingGame", { id: id, token: user });
     }
   }, []);
 

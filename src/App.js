@@ -20,6 +20,11 @@ function App() {
   const [user, setUser] = useState(window.sessionStorage.getItem("token"));
   const [userName, setUserName] = useState(null);
   const [authorized, setAuthorized] = useState(true);
+  const createNewGame = (type, turn, callBack)=>{
+    socket.emit('createNewGame', {token: user, type: type, turn:turn}, ()=>{
+      callBack();
+    })
+  }
   const handleTokenError = () => setAuthorized(false);
   useEffect(() => {
     socket.on("userUnauthorized", handleTokenError);
@@ -27,6 +32,17 @@ function App() {
       socket.off("userUnauthorized", handleTokenError);
     }
   }, [user]);
+
+  useEffect(()=>{
+    socket.on('errorCreatingNewGame', (data)=>{
+      console.log(data);
+      return ()=>{
+        socket.off('errorCreatingNewGame', (data)=>{
+          console.log(data);
+        })
+      }
+    })
+  })
 
   return (
     <>
@@ -40,7 +56,8 @@ function App() {
             userName,
             setUserName,
             authorized, 
-            setAuthorized
+            setAuthorized, 
+            createNewGame
           }}
         >
           <Container fluid>
