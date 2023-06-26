@@ -11,7 +11,7 @@ export function Login(props) {
   const [password, setPassword] = useState(null);
   const URL = process.env.REACT_APP_SERVER_URL;
   const login = () => {
-    console.log(`email: ${email}, password:${password}`);
+    
     axios
       .post(`${URL}/login`, {
         email: email,
@@ -41,8 +41,7 @@ export function Login(props) {
               placeholder='Enter email'
               onChange={(e) => {
                 setEmail(e.target.value);
-                console.log(email);
-                console.log(password);
+               
               }}
             />
           </div>
@@ -54,8 +53,7 @@ export function Login(props) {
               placeholder='Enter password'
               onChange={(e) => {
                 setPassword(e.target.value);
-                console.log(email);
-                console.log(password);
+                
               }}
             />
           </div>

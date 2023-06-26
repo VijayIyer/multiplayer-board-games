@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { Container, Button } from "react-bootstrap";
 import { useContext, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import { appContext } from "./../../AppContext";
 import "./index.css";
 import "bootstrap/dist/css/bootstrap.css";
@@ -27,11 +27,13 @@ export function TicTacToe() {
   const [gameId, setGameId] = useState(-1);
   const [gameOver, setGameOver] = useState(false);
   let { id } = useParams();
+  const location = useLocation();
+  const gameData = location.state;
   const populateGame = (data) => {
     console.log(
       `here's the data to create a tic tac toe game ${JSON.stringify(data)}`
     );
-    if(data.type === 'Tic Tac Toe'){
+    if(data.type === 'TicTacToe'){
       setSquares(data.squares);
       setGameId(data.id);
       setTurn(data.turn);
@@ -42,16 +44,10 @@ export function TicTacToe() {
     }
   }
   useEffect(() => {
-    console.log(`is id undefined ${!id}`);
-    // create new game and obtain id
-    if (!id) {
-      console.log(`creating new game since id is undefined`);
-      socket.emit("createNewGame", { token: user, type:'TicTacToe' });
-    }
-    // join an existing game with a specific id
-    else {
-      socket.emit("getExistingGame", { id: id, token: user });
-    }
+     console.log(gameData);
+     setSquares(gameData.squares);
+     setTurn(gameData.turn);
+     setGameId(gameData.id);
   }, []);
   // get details about newly created game
   

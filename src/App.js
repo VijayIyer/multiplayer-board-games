@@ -1,7 +1,6 @@
 import Container from "react-bootstrap/Container";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Routes, Route, useNavigate } from "react-router-dom";
 import { ChooseGame } from "./components/ChooseGame";
-import { OngoingGames } from "./components/OngoingGames";
 import { Home } from "./components/Home";
 import { Login } from "./components/Login";
 import { Registration } from "./components/Registration";
@@ -20,10 +19,33 @@ function App() {
   const [user, setUser] = useState(window.sessionStorage.getItem("token"));
   const [userName, setUserName] = useState(null);
   const [authorized, setAuthorized] = useState(true);
+  const navigate = useNavigate();
   const createNewGame = (type, turn, callBack)=>{
-    socket.emit('createNewGame', {token: user, type: type, turn:turn}, ()=>{
+    socket.emit('createNewGame', {token: user, type: type, turn:turn}, callBack)
+  }
+  const joinGame = (type, turn, id, callBack)=>{
+    console.log(`joining game with turn ${turn}`);
+    socket.emit('joinGame', { token: user, id:id, turn:turn }, (data)=>{
       callBack();
-    })
+      let route;
+      console.log(data);
+      switch(type){
+        case 'Connect4':
+          route = `/game/${type}/${id}`;
+          break;
+        case 'TicTacToe':
+          route = `/game/${type}/${id}`;
+          break;
+        default:
+          route = null;
+          break;
+      }
+      console.log(route);
+      if(route){
+        navigate(route, { state : data });  
+      }
+      
+    });
   }
   const handleTokenError = () => setAuthorized(false);
   useEffect(() => {
@@ -32,7 +54,6 @@ function App() {
       socket.off("userUnauthorized", handleTokenError);
     }
   }, [user]);
-
   useEffect(()=>{
     socket.on('errorCreatingNewGame', (data)=>{
       console.log(data);
@@ -57,23 +78,23 @@ function App() {
             setUserName,
             authorized, 
             setAuthorized, 
-            createNewGame
+            createNewGame,
+            joinGame
           }}
         >
           <Container fluid>
-            <BrowserRouter>
+            
               
               <NavBarHeader />
               <Routes>
                 <Route path='/' element={<Home />} />
                 <Route path='/login' element={<Login />} />
                 <Route path='/register' element={<Registration />} />
-                <Route path='/join' element={<OngoingGames />} />
                 <Route path='/newGame' element={<ChooseGame />} />
-                <Route path='/game/tictactoe/:id' element={<TicTacToe />} />
-                <Route path='/game/tictactoe' element={<TicTacToe />} />
+                <Route path='/game/TicTacToe/:id' element={<TicTacToe />} />
+                <Route path='/game/TicTacToe' element={<TicTacToe />} />
                 <Route
-                  path='/game/connect4/:id'
+                  path='/game/Connect4/:id'
                   element={
                     <GameContextProvider>
                       <Connect4 numRows={8} numCols={6} />
@@ -81,7 +102,7 @@ function App() {
                   }
                 />
                 <Route
-                  path='/game/connect4'
+                  path='/game/Connect4'
                   element={
                     <GameContextProvider>
                       <Connect4 numRows={8} numCols={6} />
@@ -91,7 +112,7 @@ function App() {
                 <Route path='*' element={<PageNotFound />} />
               </Routes>
             <UnauthorizedUser authorized={authorized}/>
-            </BrowserRouter>
+            
             
           </Container>
         </appContext.Provider>

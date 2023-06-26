@@ -24,7 +24,7 @@ export const GameContextProvider = (props) => {
   );
   let { id } = useParams();
   const location = useLocation();
-  const gameData = location.state.data;
+  const gameData = location.state;
   useEffect(() => {
       setGameId(gameData.id);
       setTurn(gameData.turn == 1 ? "blue" : "red");

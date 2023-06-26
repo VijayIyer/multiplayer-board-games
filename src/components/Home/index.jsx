@@ -3,11 +3,18 @@ import { Button, Container, Row, Col, Card } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { appContext } from "./../../AppContext";
 import { useNavigate } from "react-router-dom";
+import { JoinOptions } from '../JoinOptions';
 import axios from "axios";
 export function Home() {
   const navigate = useNavigate();
   const { user, setUser, userName, setUserName, socket } = useContext(appContext);
   const [ongoingGames, setOngoingGames] = useState([]);
+  const [promptType, setPromptType] = useState(null);
+  const [joiningGameId, setJoiningGameId] = useState(null);
+  const handlePrompt = ()=>{ 
+    setPromptType(null);
+    setJoiningGameId(null);
+  }
   function updateOngoingGames() {
     socket.on("newGameCreated", (data) => {
       console.log(JSON.stringify(data));
@@ -16,21 +23,29 @@ export function Home() {
   }
   const joinGame = (gameId)=>{
     console.log(`sending event to join game ${gameId}`);
-    socket.emit('joinGame', { 'id':gameId, 'token':user }, (data)=>{
-      console.log(`joined game ${JSON.stringify(data)}`);
+    socket.emit('checkIfInGame', { id:gameId, token: user }, (data)=>{
+      console.log(data);
       let route;
-      switch(data.type){
-        case 'Tic Tac Toe':
-          route = `/game/tictactoe/${data.gameId}`;
-          break;
-        case 'Connect4':
-          route = `/game/connect4/${data.gameId}`;
-          break;
-        default:
-          break;
+      if(!data.alreadyInGame){
+        console.log(`showing prompt, ${promptType}, ${joiningGameId}, ${promptType !==null && joiningGameId !== null}`);
+        setPromptType(data.gameData.type);
+        setJoiningGameId(data.gameData.id);
       }
-      navigate(route);
-    });
+      else{
+        switch(data.gameData.type){
+            case 'TicTacToe':
+              route = `/game/TicTacToe/${gameId}`;
+              break;
+            case 'Connect4':
+              route = `/game/Connect4/${gameId}`;
+              break;
+            default:
+              break;
+          }
+        navigate(route, { state : data.gameData });
+      }
+    })
+    
   }
   useEffect(() => {
     updateOngoingGames();
@@ -65,25 +80,34 @@ export function Home() {
   useEffect(() => {
         socket.on("newGameDetails", (data)=>{
           if(data.type === 'TicTacToe'){
-            navigate(`/game/tictactoe/${data.id}`, { state : data});
+            navigate(`/game/TicTacToe/${data.id}`, { state : data});
             }
           else if (data.type === 'Connect4'){
-            navigate(`/game/connect4/${data.id}`, { state: data});
+            navigate(`/game/Connect4/${data.id}`, { state: data});
             }
         });
         return ()=>{
           socket.off("newGameDetails", (data)=>{
           if(data.type === 'TicTacToe'){
-            navigate(`/game/tictactoe/${data.id}`, { state : data});
+            navigate(`/game/TicTacToe/${data.id}`, { state : data});
             }
           else if (data.type === 'Connect4'){
-            navigate(`/game/connect4/${data.id}`, { state: data});
+            navigate(`/game/Connect4/${data.id}`, { state: data});
             }
           });
         }
     }, []);
 
   return (
+    <>
+    {promptType !== null && joiningGameId !== null ? 
+    <JoinOptions 
+      handlePrompt={handlePrompt} 
+      type={promptType} 
+      gameId={joiningGameId} />
+      :
+    null
+    }
     <Container className='d-flex gap-3 flex-column' fluid>
       <Row xs={4} lg={4} md={4}>
         <Col>
@@ -98,9 +122,9 @@ export function Home() {
         </Col>
         {ongoingGames.map((game, index) => {
           return (
-            <Col xs={3} sm={3} lg={3} md={3}>
+            <Col key={game.id} xs={3} sm={3} lg={3} md={3}>
               <Card>
-                <Card.Header>{`${game.type} #${game.gameId}`}</Card.Header>
+                <Card.Header>{`${game.type} #${game.id}`}</Card.Header>
                 <Card.Body>
                   {game.users.map((user) => {
                     return <Card.Text>{user}</Card.Text>;
@@ -108,16 +132,16 @@ export function Home() {
                 </Card.Body>
                 <Card.Footer>
                   <Card.Link>
-                    {game.type === "Tic Tac Toe" && (
+                    {game.type === "TicTacToe" && (
                       <Button 
-                        onClick={()=>joinGame(game.gameId)} 
+                        onClick={()=>joinGame(game.id)} 
                         variant='outline-dark'>
                         Join
                       </Button>
                     )}
                     {game.type === "Connect4" && (
                       <Button 
-                        onClick={()=>joinGame(game.gameId)} 
+                        onClick={()=>joinGame(game.id)} 
                         variant='outline-dark'>
                         Join
                       </Button>
@@ -130,5 +154,6 @@ export function Home() {
         })}
       </Row>
     </Container>
+    </>
   );
 }
