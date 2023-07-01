@@ -1,20 +1,22 @@
 import { Modal, Button } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
-export default function UnauthorizedUser({ authorized }) {
-  const handleClose = () => {};
+import { useContext } from "react";
+import { appContext } from "../../AppContext";
+export default function UnauthorizedUser() {
+  const { authorized, setAuthorized } = useContext(appContext);
+  const handleClose = () => {
+    setAuthorized(true);
+  };
   return (
-    <Modal show={!authorized}>
+    <Modal show={!authorized} onHide={handleClose}>
       <Modal.Dialog>
         <Modal.Header closeButton>
           <Modal.Title>Login Failed / No Token</Modal.Title>
         </Modal.Header>
 
         <Modal.Body>
-          <p>
-            You are unauthorized to perform the previous action. Please login to
-            get auth token
-          </p>
+          You are unauthorized to perform the previous action. Please login to
+          get auth token
         </Modal.Body>
 
         <Modal.Footer>

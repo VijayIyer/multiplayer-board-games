@@ -7,12 +7,12 @@ import { useState, useEffect, useContext } from "react";
 function GameOptions({ type, handlePrompt }) {
   const { createNewGame } = useContext(appContext);
   const [component, setComponent] = useState(null);
-  const handleChosenOption = (option) => {
-    createNewGame(type, option);
-    handlePrompt();
-  };
+
   useEffect(() => {
-    console.log(`setting show to ${type}`);
+    const handleChosenOption = (option) => {
+      createNewGame(type, option);
+      handlePrompt();
+    };
     switch (type) {
       case "TicTacToe":
         setComponent(
@@ -27,7 +27,7 @@ function GameOptions({ type, handlePrompt }) {
       default:
         break;
     }
-  }, [type]);
+  }, [type, createNewGame, handlePrompt]);
 
   return (
     <Modal onHide={handlePrompt} show={type}>
