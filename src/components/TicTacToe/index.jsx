@@ -1,5 +1,4 @@
-import React, { Component } from "react";
-import { Container, Button } from "react-bootstrap";
+import React from "react";
 import { useContext, useEffect, useState } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import { appContext } from "./../../AppContext";
@@ -26,23 +25,8 @@ export function TicTacToe() {
   const [turn, setTurn] = useState(0);
   const [gameId, setGameId] = useState(-1);
   const [gameOver, setGameOver] = useState(false);
-  let { id } = useParams();
   const location = useLocation();
   const gameData = location.state;
-  const populateGame = (data) => {
-    console.log(
-      `here's the data to create a tic tac toe game ${JSON.stringify(data)}`
-    );
-    if (data.type === "TicTacToe") {
-      setSquares(data.squares);
-      setGameId(data.id);
-      setTurn(data.turn);
-      if (winner) {
-        setHighlightedSquares(data.winner);
-      }
-      setWinner(data.winner);
-    }
-  };
   useEffect(() => {
     console.log(gameData);
     setSquares(gameData.squares);
@@ -55,7 +39,7 @@ export function TicTacToe() {
   useEffect(() => {
     socket.on("opponentMadeMove", (data) => {
       console.log(`opponent made move - id:${data.id} gameId:${gameId}`);
-      if (data.id == gameId) {
+      if (data.id === gameId) {
         console.log(`opponent made move - ${JSON.stringify(data)}`);
         setSquares(data.squares);
         setTurn(data.turn);
@@ -64,7 +48,7 @@ export function TicTacToe() {
     return () => {
       socket.off("opponentMadeMove", (data) => {
         console.log(`opponent made move - id:${data.id} gameId:${gameId}`);
-        if (data.id == gameId) {
+        if (data.id === gameId) {
           console.log(`opponent made move - ${JSON.stringify(data)}`);
           setSquares(data.squares);
           setTurn(data.turn);
