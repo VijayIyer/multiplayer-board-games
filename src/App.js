@@ -10,66 +10,12 @@ import { GameContextProvider } from "./components/Connect4/gameContextProvider";
 import { NavBarHeader } from "./components/NavBar";
 import { Connect4 } from "./components/Connect4/index.jsx";
 import UnauthorizedUser from "./components/UnauthorizedUser";
+import AppContextProvider from "./AppContextProvider";
 import "./App.css";
-import { appContext } from "./AppContext";
-import { socket } from "./socket";
-import { useEffect, useState } from "react";
 
 function App() {
-  const [user, setUser] = useState(window.sessionStorage.getItem("token"));
-  const [userName, setUserName] = useState(null);
-  const [authorized, setAuthorized] = useState(true);
-  const navigate = useNavigate();
-  const createNewGame = (type, turn) => {
-    socket.emit("createNewGame", { token: user, type: type, turn: turn });
-  };
-  const joinGame = (type, turn, id) => {
-    console.log(`joining game with turn ${turn}`);
-    socket.emit("joinGame", { token: user, id: id, turn: turn }, (data) => {
-      let route;
-      console.log(data);
-      switch (type) {
-        case "Connect4":
-          route = `/game/${type}/${id}`;
-          break;
-        case "TicTacToe":
-          route = `/game/${type}/${id}`;
-          break;
-        default:
-          route = null;
-          break;
-      }
-      console.log(route);
-      if (route) {
-        navigate(route, { state: data });
-      }
-    });
-  };
-
-  useEffect(() => {
-    function printError(data) {
-      console.log(data);
-    }
-    socket.on("errorCreatingNewGame", (data) => printError(data));
-    return () => {
-      socket.off("errorCreatingNewGame", (data) => printError(data));
-    };
-  });
-
   return (
-    <appContext.Provider
-      value={{
-        user,
-        setUser,
-        socket,
-        userName,
-        setUserName,
-        authorized,
-        setAuthorized,
-        createNewGame,
-        joinGame,
-      }}
-    >
+    <AppContextProvider>
       <div className='App'>
         <Container fluid>
           <NavBarHeader />
@@ -98,10 +44,10 @@ function App() {
             />
             <Route path='*' element={<PageNotFound />} />
           </Routes>
-          <UnauthorizedUser authorized={authorized} />
+          <UnauthorizedUser />
         </Container>
       </div>
-    </appContext.Provider>
+    </AppContextProvider>
   );
 }
 
