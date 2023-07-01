@@ -33,24 +33,24 @@ export function TicTacToe() {
     console.log(
       `here's the data to create a tic tac toe game ${JSON.stringify(data)}`
     );
-    if(data.type === 'TicTacToe'){
+    if (data.type === "TicTacToe") {
       setSquares(data.squares);
       setGameId(data.id);
       setTurn(data.turn);
       if (winner) {
         setHighlightedSquares(data.winner);
       }
-    setWinner(data.winner);
+      setWinner(data.winner);
     }
-  }
+  };
   useEffect(() => {
-     console.log(gameData);
-     setSquares(gameData.squares);
-     setTurn(gameData.turn);
-     setGameId(gameData.id);
-  }, []);
+    console.log(gameData);
+    setSquares(gameData.squares);
+    setTurn(gameData.turn);
+    setGameId(gameData.id);
+  }, [gameData]);
   // get details about newly created game
-  
+
   // recieve update when opponent makes a move
   useEffect(() => {
     socket.on("opponentMadeMove", (data) => {
@@ -61,7 +61,7 @@ export function TicTacToe() {
         setTurn(data.turn);
       }
     });
-    return ()=>{
+    return () => {
       socket.off("opponentMadeMove", (data) => {
         console.log(`opponent made move - id:${data.id} gameId:${gameId}`);
         if (data.id == gameId) {
@@ -69,48 +69,50 @@ export function TicTacToe() {
           setSquares(data.squares);
           setTurn(data.turn);
         }
-      })
-    }
-  }, [gameId]);
+      });
+    };
+  }, [gameId, socket]);
   // notification recieved when either win or lose or draw
   useEffect(() => {
     socket.on("gameOver", (data) => {
       console.log(
         `gameOver event sent by server!! dataid: ${data.id}, gameId:${gameId}`
       );
-      if (data.id == gameId) {
+      if (data.id === gameId) {
         setGameOver(true);
-        setHighlightedSquares(data.winningSquares);
-        setWinner(data.winningSquares);
+        if (data.winningSquares !== null) {
+          setHighlightedSquares(data.winningSquares);
+          setWinner(data.winningSquares);
+        }
         setTurn(data.turn);
       }
     });
 
-    return ()=>{
+    return () => {
       socket.off("gameOver", (data) => {
-      console.log(
-        `gameOver event sent by server!! dataid: ${data.id}, gameId:${gameId}`
-      );
-      if (data.id == gameId) {
-        setGameOver(true);
-        setHighlightedSquares(data.winningSquares);
-        setWinner(data.winningSquares);
-        setTurn(data.turn);
-      }
-      })
-    }
-  }, [gameId]);
+        console.log(
+          `gameOver event sent by server!! dataid: ${data.id}, gameId:${gameId}`
+        );
+        if (data.id === gameId) {
+          setGameOver(true);
+          setHighlightedSquares(data.winningSquares);
+          setWinner(data.winningSquares);
+          setTurn(data.turn);
+        }
+      });
+    };
+  }, [gameId, socket]);
 
   const handleMove = (pos) => {
     console.log(`gameId - ${gameId}, squares that was clicked: ${pos}`);
-    socket.emit("move", { pos: pos, gameId: gameId, 'token':user }, (data) => {
+    socket.emit("move", { pos: pos, gameId: gameId, token: user }, (data) => {
       console.log(`gameId at this point ${gameId}`);
       setSquares(data.squares);
       setTurn(data.turn);
     });
   };
 
-  if (gameId == -1) {
+  if (gameId === -1) {
     return <ServerNotRunningComponent />;
   }
   return (
@@ -145,7 +147,7 @@ class Game extends React.Component {
 
     return (
       <>
-        <h1>{`Game #${this.props.gameId == -1 ? "" : this.props.gameId}`}</h1>
+        <h1>{`Game #${this.props.gameId === -1 ? "" : this.props.gameId}`}</h1>
 
         <div className='game'>
           <div className='game-board align-items-center'>
