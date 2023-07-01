@@ -7,9 +7,10 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 
 export function Registration() {
-  const { user, setUser, userName, setUserName } = useContext(appContext);
+  const { setUser, setUserName } = useContext(appContext);
   const [email, setEmail] = useState(null);
   const [name, setName] = useState(null);
+  const [error, setError] = useState(null);
   const [password, setPassword] = useState(null);
   const url = process.env.REACT_APP_SERVER_URL;
   const signup = () => {
@@ -47,6 +48,7 @@ export function Registration() {
       })
       .catch((err) => {
         console.log(`signup failed with err: ${JSON.stringify(err)}`);
+        setError(`Sign up failed!! ${err}`);
       });
   };
   const navigate = useNavigate();
@@ -99,6 +101,7 @@ export function Registration() {
                         className='mb-3'
                         controlId='formBasicCheckbox'
                       ></Form.Group>
+                      {error && <div className='text-danger'>{error}</div>}
                       <div className='d-grid'>
                         <Button
                           onClick={(e) => {

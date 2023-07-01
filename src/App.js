@@ -1,4 +1,4 @@
-import Container from "react-bootstrap/Container";
+import { Container } from "react-bootstrap";
 import { Routes, Route, useNavigate } from "react-router-dom";
 import { ChooseGame } from "./components/ChooseGame";
 import { Home } from "./components/Home";
@@ -47,13 +47,6 @@ function App() {
   };
 
   useEffect(() => {
-    const handleTokenError = () => setAuthorized(false);
-    socket.on("userUnauthorized", handleTokenError);
-    return () => {
-      socket.off("userUnauthorized", handleTokenError);
-    };
-  }, [user]);
-  useEffect(() => {
     function printError(data) {
       console.log(data);
     }
@@ -64,53 +57,51 @@ function App() {
   });
 
   return (
-    <>
+    <appContext.Provider
+      value={{
+        user,
+        setUser,
+        socket,
+        userName,
+        setUserName,
+        authorized,
+        setAuthorized,
+        createNewGame,
+        joinGame,
+      }}
+    >
       <div className='App'>
-        <appContext.Provider
-          value={{
-            user,
-            setUser,
-            socket,
-            userName,
-            setUserName,
-            authorized,
-            setAuthorized,
-            createNewGame,
-            joinGame,
-          }}
-        >
-          <Container fluid>
-            <NavBarHeader />
-            <Routes>
-              <Route path='/' element={<Home />} />
-              <Route path='/login' element={<Login />} />
-              <Route path='/register' element={<Registration />} />
-              <Route path='/newGame' element={<ChooseGame />} />
-              <Route path='/game/TicTacToe/:id' element={<TicTacToe />} />
-              <Route path='/game/TicTacToe' element={<TicTacToe />} />
-              <Route
-                path='/game/Connect4/:id'
-                element={
-                  <GameContextProvider>
-                    <Connect4 numRows={8} numCols={6} />
-                  </GameContextProvider>
-                }
-              />
-              <Route
-                path='/game/Connect4'
-                element={
-                  <GameContextProvider>
-                    <Connect4 numRows={8} numCols={6} />
-                  </GameContextProvider>
-                }
-              />
-              <Route path='*' element={<PageNotFound />} />
-            </Routes>
-            <UnauthorizedUser authorized={authorized} />
-          </Container>
-        </appContext.Provider>
+        <Container fluid>
+          <NavBarHeader />
+          <Routes>
+            <Route path='/' element={<Home />} />
+            <Route path='/login' element={<Login />} />
+            <Route path='/register' element={<Registration />} />
+            <Route path='/newGame' element={<ChooseGame />} />
+            <Route path='/game/TicTacToe/:id' element={<TicTacToe />} />
+            <Route path='/game/TicTacToe' element={<TicTacToe />} />
+            <Route
+              path='/game/Connect4/:id'
+              element={
+                <GameContextProvider>
+                  <Connect4 numRows={8} numCols={6} />
+                </GameContextProvider>
+              }
+            />
+            <Route
+              path='/game/Connect4'
+              element={
+                <GameContextProvider>
+                  <Connect4 numRows={8} numCols={6} />
+                </GameContextProvider>
+              }
+            />
+            <Route path='*' element={<PageNotFound />} />
+          </Routes>
+          <UnauthorizedUser authorized={authorized} />
+        </Container>
       </div>
-    </>
+    </appContext.Provider>
   );
 }
 
