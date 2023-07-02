@@ -21,7 +21,6 @@ export function Login(props) {
       .then((res) => {
         window.sessionStorage.setItem("token", res.data.token);
         setUser(window.sessionStorage.getItem("token"));
-
         navigate("/");
       })
       .catch((err) => {

@@ -1,8 +1,8 @@
 import React from "react";
 import { useContext, useEffect, useState } from "react";
-import axios from "axios";
 import { useParams, useLocation } from "react-router-dom";
 import { appContext } from "./../../AppContext";
+import usePopulateGameData from "../../hooks/usePopulateGameData";
 import "./index.css";
 import "bootstrap/dist/css/bootstrap.css";
 import { ServerNotRunningComponent } from "../../components/serverNotRunningComponent";
@@ -29,23 +29,12 @@ export function TicTacToe() {
   const location = useLocation();
   //  const gameData = location.state ?? null;
   const { id } = useParams();
-
-  useEffect(() => {
-    const populateGameData = (gameData) => {
-      setSquares(gameData.squares);
-      setTurn(gameData.turn);
-      setGameId(gameData.id);
-    };
-    axios
-      .get(process.env.REACT_APP_SERVER_URL + location.pathname, {
-        headers: {
-          Authorization: "Bearer " + user,
-        },
-      })
-      .then((res) => res.data)
-      .then((gameData) => populateGameData(gameData))
-      .catch((err) => console.error(err.message));
-  }, []);
+  const populateGameData = (gameData) => {
+    setSquares(gameData.squares);
+    setTurn(gameData.turn);
+    setGameId(gameData.id);
+  };
+  usePopulateGameData(populateGameData);
 
   // recieve update when opponent makes a move
   useEffect(() => {
