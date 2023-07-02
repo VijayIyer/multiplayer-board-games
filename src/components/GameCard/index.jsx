@@ -1,4 +1,5 @@
 import { Card, Button } from "react-bootstrap";
+import "./index.css";
 export function GameCard({ game, joinGame }) {
   return (
     <Card className='gameCard'>
