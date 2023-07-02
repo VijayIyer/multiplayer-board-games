@@ -61,6 +61,19 @@ export default function AppContextProvider({ children }) {
     return () =>
       socket.off("newGameCreated", (data) => updateOngoingGames(data));
   }, []);
+  useEffect(() => {
+    function navigateToGame(data) {
+      if (data.type === "TicTacToe") {
+        navigate(`/game/TicTacToe/${data.id}`, { state: data });
+      } else if (data.type === "Connect4") {
+        navigate(`/game/Connect4/${data.id}`, { state: data });
+      }
+    }
+    socket.on("newGameDetails", (data) => navigateToGame(data));
+    return () => {
+      socket.off("newGameDetails", (data) => navigateToGame(data));
+    };
+  }, [navigate]);
   return (
     <appContext.Provider
       value={{

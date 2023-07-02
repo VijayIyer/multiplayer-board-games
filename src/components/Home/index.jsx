@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { appContext } from "./../../AppContext";
 import { useNavigate } from "react-router-dom";
 import { JoinOptions } from "../JoinOptions";
+import "./index.css";
 import axios from "axios";
 export function Home() {
   const navigate = useNavigate();
@@ -21,11 +22,6 @@ export function Home() {
       console.log(data);
       let route;
       if (!data.alreadyInGame) {
-        console.log(
-          `showing prompt, ${promptType}, ${joiningGameId}, ${
-            promptType !== null && joiningGameId !== null
-          }`
-        );
         setPromptType(data.gameData.type);
         setJoiningGameId(data.gameData.id);
       } else {
@@ -43,13 +39,12 @@ export function Home() {
       }
     });
   };
-
   useEffect(() => {
     socket.emit("getAllOngoingGames", (data) => {
       console.log(`getting all onging games :${JSON.stringify(data)}`);
       setOngoingGames(data);
     });
-  }, []);
+  }, [socket]);
   useEffect(() => {
     if (user) {
       axios
@@ -68,7 +63,7 @@ export function Home() {
       console.log(`no user token`);
       navigate("/login");
     }
-  }, [user]);
+  }, [user, navigate, setUserName]);
 
   useEffect(() => {
     function navigateToGame(data) {
@@ -97,7 +92,7 @@ export function Home() {
         <Row xs={4} lg={4} md={4}>
           <Col>
             <Link to='/newGame' style={{ textDecoration: "none" }}>
-              <Card className='new_game'>
+              <Card className='gameCard'>
                 <Card.Body>
                   <Card.Text>+</Card.Text>
                   <Card.Text>New Game</Card.Text>
@@ -108,7 +103,7 @@ export function Home() {
           {ongoingGames.map((game, index) => {
             return (
               <Col key={game.id} xs={3} sm={3} lg={3} md={3}>
-                <Card>
+                <Card className='gameCard'>
                   <Card.Header>{`${game.type} #${game.id}`}</Card.Header>
                   <Card.Body>
                     {game.users.map((user) => {
