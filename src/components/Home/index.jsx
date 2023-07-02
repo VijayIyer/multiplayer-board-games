@@ -7,21 +7,14 @@ import { JoinOptions } from "../JoinOptions";
 import axios from "axios";
 export function Home() {
   const navigate = useNavigate();
-  const { user, setUser, userName, setUserName, socket } =
+  const { user, setUserName, socket, ongoingGames, setOngoingGames } =
     useContext(appContext);
-  const [ongoingGames, setOngoingGames] = useState([]);
   const [promptType, setPromptType] = useState(null);
   const [joiningGameId, setJoiningGameId] = useState(null);
-  const handlePrompt = () => {
+  const handleJoinGamePrompt = () => {
     setPromptType(null);
     setJoiningGameId(null);
   };
-  function updateOngoingGames() {
-    socket.on("newGameCreated", (data) => {
-      console.log(JSON.stringify(data));
-      setOngoingGames((ongoingGames) => [...ongoingGames, data]); // append and return new array reference
-    });
-  }
   const joinGame = (gameId) => {
     console.log(`sending event to join game ${gameId}`);
     socket.emit("checkIfInGame", { id: gameId, token: user }, (data) => {
@@ -50,9 +43,6 @@ export function Home() {
       }
     });
   };
-  useEffect(() => {
-    updateOngoingGames();
-  }, []);
 
   useEffect(() => {
     socket.emit("getAllOngoingGames", (data) => {
@@ -98,7 +88,7 @@ export function Home() {
     <>
       {promptType !== null && joiningGameId !== null ? (
         <JoinOptions
-          handlePrompt={handlePrompt}
+          handleJoinGamePrompt={handleJoinGamePrompt}
           type={promptType}
           gameId={joiningGameId}
         />

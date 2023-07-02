@@ -7,6 +7,7 @@ export default function AppContextProvider({ children }) {
   const [user, setUser] = useState(window.sessionStorage.getItem("token"));
   const [userName, setUserName] = useState(null);
   const [authorized, setAuthorized] = useState(true);
+  const [ongoingGames, setOngoingGames] = useState([]);
   const createNewGame = (type, turn) => {
     socket.emit("createNewGame", { token: user, type: type, turn: turn });
   };
@@ -51,6 +52,15 @@ export default function AppContextProvider({ children }) {
       socket.off("userUnauthorized", handleUserUnauthorizedEvent);
     };
   }, []);
+  useEffect(() => {
+    function updateOngoingGames(data) {
+      console.log(JSON.stringify(data));
+      setOngoingGames((ongoingGames) => [...ongoingGames, data]); // append and return new array reference
+    }
+    socket.on("newGameCreated", (data) => updateOngoingGames(data));
+    return () =>
+      socket.off("newGameCreated", (data) => updateOngoingGames(data));
+  });
   return (
     <appContext.Provider
       value={{
@@ -63,6 +73,8 @@ export default function AppContextProvider({ children }) {
         setAuthorized,
         createNewGame,
         joinGame,
+        ongoingGames,
+        setOngoingGames,
       }}
     >
       {children}

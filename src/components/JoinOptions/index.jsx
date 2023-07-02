@@ -4,13 +4,13 @@ import { appContext } from "../../AppContext";
 import "bootstrap/dist/css/bootstrap.min.css";
 import TicTacToeOptions from "../GameOptions/TicTacToeOptions";
 import Connect4Options from "../GameOptions/Connect4Options";
-export function JoinOptions({ handlePrompt, type, gameId }) {
+export function JoinOptions({ handleJoinGamePrompt, type, gameId }) {
   const { joinGame } = useContext(appContext);
   const [component, setComponent] = useState(null);
   const handleChosenOption = (option) => {
     console.log(`joining game after choosing option`);
     joinGame(type, option, gameId);
-    handlePrompt();
+    handleJoinGamePrompt();
   };
   useEffect(() => {
     console.log(`setting show to ${type}`);
@@ -28,14 +28,14 @@ export function JoinOptions({ handlePrompt, type, gameId }) {
       default:
         break;
     }
-  }, [type, gameId]);
+  }, [type, gameId, handleChosenOption]);
   return (
-    <Modal onHide={handlePrompt} show={type}>
+    <Modal onHide={handleJoinGamePrompt} show={type}>
       <Modal.Dialog>
         {component}
 
         <Modal.Footer>
-          <Button onClick={handlePrompt} variant='outline-dark'>
+          <Button onClick={handleJoinGamePrompt} variant='outline-dark'>
             Close
           </Button>
         </Modal.Footer>
