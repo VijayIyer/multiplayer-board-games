@@ -1,5 +1,6 @@
 import React from "react";
 import { useContext, useEffect, useState } from "react";
+import axios from "axios";
 import { useParams, useLocation } from "react-router-dom";
 import { appContext } from "./../../AppContext";
 import "./index.css";
@@ -26,39 +27,44 @@ export function TicTacToe() {
   const [gameId, setGameId] = useState(-1);
   const [gameOver, setGameOver] = useState(false);
   const location = useLocation();
-  const gameData = location.state;
+  //  const gameData = location.state ?? null;
+  const { id } = useParams();
+
   useEffect(() => {
-    console.log(gameData);
-    setSquares(gameData.squares);
-    setTurn(gameData.turn);
-    setGameId(gameData.id);
-  }, [gameData]);
-  // get details about newly created game
+    const populateGameData = (gameData) => {
+      setSquares(gameData.squares);
+      setTurn(gameData.turn);
+      setGameId(gameData.id);
+    };
+    axios
+      .get(process.env.REACT_APP_SERVER_URL + location.pathname, {
+        headers: {
+          Authorization: "Bearer " + user,
+        },
+      })
+      .then((res) => res.data)
+      .then((gameData) => populateGameData(gameData))
+      .catch((err) => console.error(err.message));
+  }, []);
 
   // recieve update when opponent makes a move
   useEffect(() => {
-    socket.on("opponentMadeMove", (data) => {
+    function handleOpponentMadeMove(data) {
       console.log(`opponent made move - id:${data.id} gameId:${gameId}`);
       if (data.id === gameId) {
         console.log(`opponent made move - ${JSON.stringify(data)}`);
         setSquares(data.squares);
         setTurn(data.turn);
       }
-    });
-    return () => {
-      socket.off("opponentMadeMove", (data) => {
-        console.log(`opponent made move - id:${data.id} gameId:${gameId}`);
-        if (data.id === gameId) {
-          console.log(`opponent made move - ${JSON.stringify(data)}`);
-          setSquares(data.squares);
-          setTurn(data.turn);
-        }
-      });
-    };
+    }
+
+    socket.on("opponentMadeMove", (data) => handleOpponentMadeMove(data));
+    return () =>
+      socket.off("opponentMadeMove", (data) => handleOpponentMadeMove(data));
   }, [gameId, socket]);
   // notification recieved when either win or lose or draw
   useEffect(() => {
-    socket.on("gameOver", (data) => {
+    function handleGameOver(data) {
       console.log(
         `gameOver event sent by server!! dataid: ${data.id}, gameId:${gameId}`
       );
@@ -70,20 +76,10 @@ export function TicTacToe() {
         }
         setTurn(data.turn);
       }
-    });
-
+    }
+    socket.on("gameOver", (data) => handleGameOver(data));
     return () => {
-      socket.off("gameOver", (data) => {
-        console.log(
-          `gameOver event sent by server!! dataid: ${data.id}, gameId:${gameId}`
-        );
-        if (data.id === gameId) {
-          setGameOver(true);
-          setHighlightedSquares(data.winningSquares);
-          setWinner(data.winningSquares);
-          setTurn(data.turn);
-        }
-      });
+      socket.off("gameOver", (data) => handleGameOver(data));
     };
   }, [gameId, socket]);
 

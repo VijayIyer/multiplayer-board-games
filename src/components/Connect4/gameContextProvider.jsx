@@ -1,12 +1,13 @@
 import { useContext, useState, useEffect } from "react";
 import { appContext } from "./../../AppContext";
 import { useParams, useLocation } from "react-router-dom";
+import axios from "axios";
 import "./../../App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { gameContext } from "./gameContext";
 
 export const GameContextProvider = (props) => {
-  const { socket } = useContext(appContext);
+  const { socket, user } = useContext(appContext);
   const numRows = 8; // needs to be dynamic
   const numCols = 6; // needs to be dynamic
   const [moves, setMoves] = useState([]);
@@ -23,14 +24,23 @@ export const GameContextProvider = (props) => {
   );
   let { id } = useParams();
   const location = useLocation();
-  const gameData = location.state;
   useEffect(() => {
-    setGameId(gameData.id);
-    setTurn(gameData.turn == 1 ? "blue" : "red");
-    setFilled(gameData.filled);
-    setAllowed(gameData.allowed);
+    const populateGameData = (gameData) => {
+      setGameId(gameData.id);
+      setTurn(gameData.turn === 1 ? "blue" : "red");
+      setFilled(gameData.filled);
+      setAllowed(gameData.allowed);
+    };
+    axios
+      .get(process.env.REACT_APP_SERVER_URL + location.pathname, {
+        headers: {
+          Authorization: "Bearer " + user,
+        },
+      })
+      .then((res) => res.data)
+      .then((gameData) => populateGameData(gameData))
+      .catch((err) => console.error(err.message));
   }, []);
-
   useEffect(() => {
     function handleConnect4MoveSuccess(data) {
       console.log(`a move was played - ${JSON.stringify(data)}`);
@@ -49,8 +59,8 @@ export const GameContextProvider = (props) => {
   }, [gameId]);
   useEffect(() => {
     socket.on("connect4gameover", (data) => {
-      if (data.id == gameId) {
-        setTurn(data.turn == 1 ? "blue" : "red");
+      if (data.id === gameId) {
+        setTurn(data.turn === 1 ? "blue" : "red");
         setFilled(data.filled);
         setAllowed(data.allowed);
         setGameOver(true);
@@ -62,8 +72,8 @@ export const GameContextProvider = (props) => {
     });
     return () => {
       socket.off("connect4gameover", (data) => {
-        if (data.id == gameId) {
-          setTurn(data.turn == 1 ? "blue" : "red");
+        if (data.id === gameId) {
+          setTurn(data.turn === 1 ? "blue" : "red");
           setFilled(data.filled);
           setAllowed(data.allowed);
           setGameOver(true);
