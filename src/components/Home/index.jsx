@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { appContext } from "./../../AppContext";
 import { useNavigate } from "react-router-dom";
 import { JoinOptions } from "../JoinOptions";
+import { GameCard } from "../GameCard";
 import "./index.css";
 import axios from "axios";
 export function Home() {
@@ -35,7 +36,7 @@ export function Home() {
           default:
             break;
         }
-        navigate(route, { state: data.gameData });
+        navigate(route);
       }
     });
   };
@@ -65,20 +66,6 @@ export function Home() {
     }
   }, [user, navigate, setUserName]);
 
-  useEffect(() => {
-    function navigateToGame(data) {
-      if (data.type === "TicTacToe") {
-        navigate(`/game/TicTacToe/${data.id}`, { state: data });
-      } else if (data.type === "Connect4") {
-        navigate(`/game/Connect4/${data.id}`, { state: data });
-      }
-    }
-    socket.on("newGameDetails", (data) => navigateToGame(data));
-    return () => {
-      socket.off("newGameDetails", (data) => navigateToGame(data));
-    };
-  }, [socket, navigate]);
-
   return (
     <>
       {promptType !== null && joiningGameId !== null ? (
@@ -103,34 +90,7 @@ export function Home() {
           {ongoingGames.map((game, index) => {
             return (
               <Col key={game.id} xs={3} sm={3} lg={3} md={3}>
-                <Card className='gameCard'>
-                  <Card.Header>{`${game.type} #${game.id}`}</Card.Header>
-                  <Card.Body>
-                    {game.users.map((user) => {
-                      return <Card.Text>{user}</Card.Text>;
-                    })}
-                  </Card.Body>
-                  <Card.Footer>
-                    <Card.Link>
-                      {game.type === "TicTacToe" && (
-                        <Button
-                          onClick={() => joinGame(game.id)}
-                          variant='outline-dark'
-                        >
-                          Join
-                        </Button>
-                      )}
-                      {game.type === "Connect4" && (
-                        <Button
-                          onClick={() => joinGame(game.id)}
-                          variant='outline-dark'
-                        >
-                          Join
-                        </Button>
-                      )}
-                    </Card.Link>
-                  </Card.Footer>
-                </Card>
+                <GameCard game={game} joinGame={joinGame} />
               </Col>
             );
           })}
