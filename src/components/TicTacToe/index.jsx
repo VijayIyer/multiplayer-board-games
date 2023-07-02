@@ -1,8 +1,8 @@
-import React, { Component } from "react";
-import { Container, Button } from "react-bootstrap";
+import React from "react";
 import { useContext, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import { appContext } from "./../../AppContext";
+import usePopulateGameData from "../../hooks/usePopulateGameData";
 import "./index.css";
 import "bootstrap/dist/css/bootstrap.css";
 import { ServerNotRunningComponent } from "../../components/serverNotRunningComponent";
@@ -26,107 +26,62 @@ export function TicTacToe() {
   const [turn, setTurn] = useState(0);
   const [gameId, setGameId] = useState(-1);
   const [gameOver, setGameOver] = useState(false);
-  let { id } = useParams();
-  const populateGame = (data) => {
-    console.log(
-      `here's the data to create a tic tac toe game ${JSON.stringify(data)}`
-    );
-    if(data.type === 'Tic Tac Toe'){
-      setSquares(data.squares);
-      setGameId(data.id);
-      setTurn(data.turn);
-      if (winner) {
-        setHighlightedSquares(data.winner);
-      }
-    setWinner(data.winner);
-    }
-  }
-  useEffect(() => {
-    console.log(`is id undefined ${!id}`);
-    // create new game and obtain id
-    if (!id) {
-      console.log(`creating new game since id is undefined`);
-      socket.emit("createTicTacToeGame", { token: user });
-    }
-    // join an existing game with a specific id
-    else {
-      socket.emit("getExistingTicTacToeGame", { id: id, token: user });
-    }
-  }, []);
-  // get details about newly created game
-  useEffect(() => {
-    socket.on("newGameDetails", (data)=>populateGame(data));
-    return ()=>{
-      socket.off("newGameDetails", (data)=>populateGame(data));
-    }
-  }, [gameId]);
-  // get details about a game you just joined
-  useEffect(() => {
-    socket.on("ongoingGameDetails", (data) => populateGame(data));
-    return ()=>{
-      socket.off("ongoingGameDetails", (data) => populateGame(data));
-    }
-  }, [gameId]);
+  const location = useLocation();
+  //  const gameData = location.state ?? null;
+  const { id } = useParams();
+  const populateGameData = (gameData) => {
+    setSquares(gameData.squares);
+    setTurn(gameData.turn);
+    setGameId(gameData.id);
+  };
+  usePopulateGameData(populateGameData);
+
   // recieve update when opponent makes a move
   useEffect(() => {
-    socket.on("opponentMadeMove", (data) => {
+    function handleOpponentMadeMove(data) {
       console.log(`opponent made move - id:${data.id} gameId:${gameId}`);
-      if (data.id == gameId) {
+      if (data.id === gameId) {
         console.log(`opponent made move - ${JSON.stringify(data)}`);
         setSquares(data.squares);
         setTurn(data.turn);
       }
-    });
-    return ()=>{
-      socket.off("opponentMadeMove", (data) => {
-        console.log(`opponent made move - id:${data.id} gameId:${gameId}`);
-        if (data.id == gameId) {
-          console.log(`opponent made move - ${JSON.stringify(data)}`);
-          setSquares(data.squares);
-          setTurn(data.turn);
-        }
-      })
     }
-  }, [gameId]);
+
+    socket.on("opponentMadeMove", (data) => handleOpponentMadeMove(data));
+    return () =>
+      socket.off("opponentMadeMove", (data) => handleOpponentMadeMove(data));
+  }, [gameId, socket]);
   // notification recieved when either win or lose or draw
   useEffect(() => {
-    socket.on("gameOver", (data) => {
+    function handleGameOver(data) {
       console.log(
         `gameOver event sent by server!! dataid: ${data.id}, gameId:${gameId}`
       );
-      if (data.id == gameId) {
+      if (data.id === gameId) {
         setGameOver(true);
-        setHighlightedSquares(data.winningSquares);
-        setWinner(data.winningSquares);
+        if (data.winningSquares !== null) {
+          setHighlightedSquares(data.winningSquares);
+          setWinner(data.winningSquares);
+        }
         setTurn(data.turn);
       }
-    });
-
-    return ()=>{
-      socket.off("gameOver", (data) => {
-      console.log(
-        `gameOver event sent by server!! dataid: ${data.id}, gameId:${gameId}`
-      );
-      if (data.id == gameId) {
-        setGameOver(true);
-        setHighlightedSquares(data.winningSquares);
-        setWinner(data.winningSquares);
-        setTurn(data.turn);
-      }
-      })
     }
-  }, [gameId]);
+    socket.on("gameOver", (data) => handleGameOver(data));
+    return () => {
+      socket.off("gameOver", (data) => handleGameOver(data));
+    };
+  }, [gameId, socket]);
 
   const handleMove = (pos) => {
     console.log(`gameId - ${gameId}, squares that was clicked: ${pos}`);
-    socket.emit("move", { pos: pos, gameId: gameId, 'token':user }, (data) => {
+    socket.emit("move", { pos: pos, gameId: gameId, token: user }, (data) => {
       console.log(`gameId at this point ${gameId}`);
       setSquares(data.squares);
       setTurn(data.turn);
     });
   };
 
-  if (gameId == -1) {
+  if (gameId === -1) {
     return <ServerNotRunningComponent />;
   }
   return (
@@ -161,7 +116,7 @@ class Game extends React.Component {
 
     return (
       <>
-        <h1>{`Game #${this.props.gameId == -1 ? "" : this.props.gameId}`}</h1>
+        <h1>{`Game #${this.props.gameId === -1 ? "" : this.props.gameId}`}</h1>
 
         <div className='game'>
           <div className='game-board align-items-center'>

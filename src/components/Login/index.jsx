@@ -1,17 +1,17 @@
 import React, { useState } from "react";
 import axios from "axios";
 import "./index.css";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useContext } from "react";
 import { appContext } from "./../../AppContext";
 export function Login(props) {
   const navigate = useNavigate();
-  const { user, setUser, userName, setUserName, setAuthorized } = useContext(appContext);
+  const { setUser } = useContext(appContext);
   const [email, setEmail] = useState(null);
   const [password, setPassword] = useState(null);
+  const [error, setError] = useState(null);
   const URL = process.env.REACT_APP_SERVER_URL;
   const login = () => {
-    console.log(`email: ${email}, password:${password}`);
     axios
       .post(`${URL}/login`, {
         email: email,
@@ -21,11 +21,10 @@ export function Login(props) {
       .then((res) => {
         window.sessionStorage.setItem("token", res.data.token);
         setUser(window.sessionStorage.getItem("token"));
-
         navigate("/");
       })
       .catch((err) => {
-        console.log(`login failed!! : \n ${JSON.stringify(err)}`);
+        setError(`Login Failed!! ${err}`);
       });
   };
   return (
@@ -40,9 +39,8 @@ export function Login(props) {
               className='form-control mt-1'
               placeholder='Enter email'
               onChange={(e) => {
+                setError(null);
                 setEmail(e.target.value);
-                console.log(email);
-                console.log(password);
               }}
             />
           </div>
@@ -53,9 +51,8 @@ export function Login(props) {
               className='form-control mt-1'
               placeholder='Enter password'
               onChange={(e) => {
+                setError(null);
                 setPassword(e.target.value);
-                console.log(email);
-                console.log(password);
               }}
             />
           </div>
@@ -71,12 +68,14 @@ export function Login(props) {
               Login
             </button>
           </div>
+          {error && <div className='text-danger'>{error}</div>}
           <p className='forgot-password text-right mt-2'>
             Forgot <a href='#'>password?</a>
           </p>
-          <p className='text-right mt-2'>
-            <a href='/register'>Create Account</a>
-          </p>
+
+          <Link to='/register'>
+            <p className='text-right mt-2'>Create Account</p>
+          </Link>
         </div>
       </form>
     </div>

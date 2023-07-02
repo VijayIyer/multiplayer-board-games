@@ -3,45 +3,49 @@ import { Button, Container, Row, Col, Card } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { appContext } from "./../../AppContext";
 import { useNavigate } from "react-router-dom";
+import { JoinOptions } from "../JoinOptions";
+import { GameCard } from "../GameCard";
+import "./index.css";
 import axios from "axios";
 export function Home() {
   const navigate = useNavigate();
-  const { user, setUser, userName, setUserName, socket } = useContext(appContext);
-  const [ongoingGames, setOngoingGames] = useState([]);
-  function updateOngoingGames() {
-    socket.on("newGameCreated", (data) => {
-      console.log(JSON.stringify(data));
-      setOngoingGames((ongoingGames) => [...ongoingGames, data]); // append and return new array reference
-    });
-  }
-  const joinGame = (gameId)=>{
+  const { user, setUserName, socket, ongoingGames, setOngoingGames } =
+    useContext(appContext);
+  const [promptType, setPromptType] = useState(null);
+  const [joiningGameId, setJoiningGameId] = useState(null);
+  const handleJoinGamePrompt = () => {
+    setPromptType(null);
+    setJoiningGameId(null);
+  };
+  const joinGame = (gameId) => {
     console.log(`sending event to join game ${gameId}`);
-    socket.emit('joinGame', { 'id':gameId, 'token':user }, (data)=>{
-      console.log(`joined game ${JSON.stringify(data)}`);
+    socket.emit("checkIfInGame", { id: gameId, token: user }, (data) => {
+      console.log(data);
       let route;
-      switch(data.type){
-        case 'Tic Tac Toe':
-          route = `/game/tictactoe/${data.gameId}`;
-          break;
-        case 'Connect4':
-          route = `/game/connect4/${data.gameId}`;
-          break;
-        default:
-          break;
+      if (!data.alreadyInGame) {
+        setPromptType(data.gameData.type);
+        setJoiningGameId(data.gameData.id);
+      } else {
+        switch (data.gameData.type) {
+          case "TicTacToe":
+            route = `/game/TicTacToe/${gameId}`;
+            break;
+          case "Connect4":
+            route = `/game/Connect4/${gameId}`;
+            break;
+          default:
+            break;
+        }
+        navigate(route);
       }
-      navigate(route);
     });
-  }
-  useEffect(() => {
-    updateOngoingGames();
-  }, []);
-  
+  };
   useEffect(() => {
     socket.emit("getAllOngoingGames", (data) => {
       console.log(`getting all onging games :${JSON.stringify(data)}`);
       setOngoingGames(data);
     });
-  }, []);
+  }, [socket]);
   useEffect(() => {
     if (user) {
       axios
@@ -60,54 +64,38 @@ export function Home() {
       console.log(`no user token`);
       navigate("/login");
     }
-  }, [user]);
+  }, [user, navigate, setUserName]);
 
   return (
-    <Container className='d-flex gap-3 flex-column' fluid>
-      <Row xs={4} lg={4} md={4}>
-        <Col>
-          <Link to='/newGame' style={{ textDecoration: "none" }}>
-            <Card className='new_game'>
-              <Card.Body>
-                <Card.Text>+</Card.Text>
-                <Card.Text>New Game</Card.Text>
-              </Card.Body>
-            </Card>
-          </Link>
-        </Col>
-        {ongoingGames.map((game, index) => {
-          return (
-            <Col xs={3} sm={3} lg={3} md={3}>
-              <Card>
-                <Card.Header>{`${game.type} #${game.gameId}`}</Card.Header>
+    <>
+      {promptType !== null && joiningGameId !== null ? (
+        <JoinOptions
+          handleJoinGamePrompt={handleJoinGamePrompt}
+          type={promptType}
+          gameId={joiningGameId}
+        />
+      ) : null}
+      <Container className='d-flex gap-3 flex-column' fluid>
+        <Row xs={4} lg={4} md={4}>
+          <Col>
+            <Link to='/newGame' style={{ textDecoration: "none" }}>
+              <Card className='gameCard'>
                 <Card.Body>
-                  {game.users.map((user) => {
-                    return <Card.Text>{user}</Card.Text>;
-                  })}
+                  <Card.Text>+</Card.Text>
+                  <Card.Text>New Game</Card.Text>
                 </Card.Body>
-                <Card.Footer>
-                  <Card.Link>
-                    {game.type === "Tic Tac Toe" && (
-                      <Button 
-                        onClick={()=>joinGame(game.gameId)} 
-                        variant='outline-dark'>
-                        Join
-                      </Button>
-                    )}
-                    {game.type === "Connect4" && (
-                      <Button 
-                        onClick={()=>joinGame(game.gameId)} 
-                        variant='outline-dark'>
-                        Join
-                      </Button>
-                    )}
-                  </Card.Link>
-                </Card.Footer>
               </Card>
-            </Col>
-          );
-        })}
-      </Row>
-    </Container>
+            </Link>
+          </Col>
+          {ongoingGames.map((game, index) => {
+            return (
+              <Col key={game.id} xs={3} sm={3} lg={3} md={3}>
+                <GameCard game={game} joinGame={joinGame} />
+              </Col>
+            );
+          })}
+        </Row>
+      </Container>
+    </>
   );
 }
