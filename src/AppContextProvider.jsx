@@ -60,7 +60,7 @@ export default function AppContextProvider({ children }) {
     socket.on("newGameCreated", (data) => updateOngoingGames(data));
     return () =>
       socket.off("newGameCreated", (data) => updateOngoingGames(data));
-  });
+  }, []);
   return (
     <appContext.Provider
       value={{
