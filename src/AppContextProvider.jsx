@@ -29,7 +29,7 @@ export default function AppContextProvider({ children }) {
       }
 
       if (route) {
-        navigate(route, { state: data });
+        navigate(route);
       }
     });
   };
@@ -63,10 +63,11 @@ export default function AppContextProvider({ children }) {
   }, []);
   useEffect(() => {
     function navigateToGame(data) {
+      console.log(`navigiating to created game`);
       if (data.type === "TicTacToe") {
-        navigate(`/game/TicTacToe/${data.id}`, { state: data });
+        navigate(`/game/TicTacToe/${data.id}`);
       } else if (data.type === "Connect4") {
-        navigate(`/game/Connect4/${data.id}`, { state: data });
+        navigate(`/game/Connect4/${data.id}`);
       }
     }
     socket.on("newGameDetails", (data) => navigateToGame(data));
