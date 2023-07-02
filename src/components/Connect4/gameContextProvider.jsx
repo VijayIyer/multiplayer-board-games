@@ -1,16 +1,15 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { useContext, useState, useEffect } from "react";
 import { appContext } from "./../../AppContext";
 import { useParams, useLocation } from "react-router-dom";
-import { Connect4 } from "./index.jsx";
 import "./../../App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { gameContext } from "./gameContext";
 
 export const GameContextProvider = (props) => {
-  const { socket, user } = useContext(appContext);
+  const { socket } = useContext(appContext);
   const numRows = 8; // needs to be dynamic
   const numCols = 6; // needs to be dynamic
-  const [moves, setMoves] = useState([]); 
+  const [moves, setMoves] = useState([]);
   const [turn, setTurn] = useState("red");
   const [gameId, setGameId] = useState(null);
   const [gameOver, setGameOver] = useState(false);
@@ -26,35 +25,27 @@ export const GameContextProvider = (props) => {
   const location = useLocation();
   const gameData = location.state;
   useEffect(() => {
-      setGameId(gameData.id);
-      setTurn(gameData.turn == 1 ? "blue" : "red");
-      setFilled(gameData.filled);
-      setAllowed(gameData.allowed);  
+    setGameId(gameData.id);
+    setTurn(gameData.turn == 1 ? "blue" : "red");
+    setFilled(gameData.filled);
+    setAllowed(gameData.allowed);
   }, []);
-  
+
   useEffect(() => {
-    socket.on("connect4MoveSuccess", (data) => {
+    function handleConnect4MoveSuccess(data) {
       console.log(`a move was played - ${JSON.stringify(data)}`);
-      if (data.id == gameId) {
+      if (data.id === gameId) {
         console.log(`a move was played - ${JSON.stringify(data)}`);
-        setTurn(data.turn == 1 ? "blue" : "red");
-        setMoves((moves) => filled.filter((x, i) => x != -1));
+        setTurn(data.turn === 1 ? "blue" : "red");
+        setMoves((moves) => filled.filter((x, i) => x !== -1));
         setFilled(data.filled);
         setAllowed(data.allowed);
       }
-    });
-    return ()=>{
-      socket.off("connect4MoveSuccess", (data) => {
-        console.log(`a move was played - ${JSON.stringify(data)}`);
-        if (data.id == gameId) {
-          console.log(`a move was played - ${JSON.stringify(data)}`);
-          setTurn(data.turn == 1 ? "blue" : "red");
-          setMoves((moves) => filled.filter((x, i) => x != -1));
-          setFilled(data.filled);
-          setAllowed(data.allowed);
-        }
-      })
     }
+    socket.on("connect4MoveSuccess", handleConnect4MoveSuccess);
+    return () => {
+      socket.off("connect4MoveSuccess", handleConnect4MoveSuccess);
+    };
   }, [gameId]);
   useEffect(() => {
     socket.on("connect4gameover", (data) => {
@@ -69,25 +60,26 @@ export const GameContextProvider = (props) => {
         setWinningCircles(data.winningCircles);
       }
     });
-    return ()=>{
+    return () => {
       socket.off("connect4gameover", (data) => {
         if (data.id == gameId) {
-            setTurn(data.turn == 1 ? "blue" : "red");
-            setFilled(data.filled);
-            setAllowed(data.allowed);
-            setGameOver(true);
-            console.log(
-              `winning circles are  - ${JSON.stringify(data.winningCircles)}`
-            );
-            setWinningCircles(data.winningCircles);
-          }
-        })
-    }
+          setTurn(data.turn == 1 ? "blue" : "red");
+          setFilled(data.filled);
+          setAllowed(data.allowed);
+          setGameOver(true);
+          console.log(
+            `winning circles are  - ${JSON.stringify(data.winningCircles)}`
+          );
+          setWinningCircles(data.winningCircles);
+        }
+      });
+    };
   }, [gameId]);
   useEffect(() => {
     socket.on("moveNotAllowed", () => {
       console.warn("move not allowed");
     });
+    socket.off("moveNotAllowed");
   }, []);
 
   return (
